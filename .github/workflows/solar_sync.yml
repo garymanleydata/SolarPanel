@@ -1,9 +1,6 @@
 name: Solar Telemetry Ingestion Pipeline
 
 on:
-  schedule:
-    # Runs at minute 33 of every hour (off-peak interval)
-    - cron: '33 * * * *'
   workflow_dispatch:
 
 permissions:
