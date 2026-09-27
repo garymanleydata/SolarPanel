@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en-GB">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Solar & Battery Energy Platform</title>
+  <title>Solar & Battery Home Energy Platform</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Apache ECharts CDN -->
@@ -16,159 +16,199 @@
           colors: {
             brand: {
               solar: '#f59e0b',
-              load: '#ef4444',
+              load: '#f43f5e',
               battery: '#10b981',
-              grid: '#3b82f6',
-              bg: '#0f172a',
-              card: '#1e293b'
+              grid: '#38bdf8',
+              bg: '#090d16',
+              card: '#131b2e',
+              cardborder: '#1e293b'
             }
           }
         }
       }
     };
   </script>
+  <style>
+    ::-webkit-scrollbar { height: 6px; width: 6px; }
+    ::-webkit-scrollbar-track { background: #090d16; }
+    ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 3px; }
+  </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen p-4 md:p-8 font-sans antialiased">
-  <div class="max-w-7xl mx-auto space-y-6">
+<body class="bg-slate-950 text-slate-100 min-h-screen p-3 sm:p-6 md:p-8 font-sans antialiased selection:bg-amber-500 selection:text-slate-950">
+  <div class="max-w-7xl mx-auto space-y-5">
 
-    <!-- Header Section -->
-    <header class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-800 pb-4 gap-4">
+    <!-- Top Header -->
+    <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-800/80 pb-4 gap-3">
       <div>
-        <h1 class="text-2xl md:text-3xl font-bold tracking-tight text-white flex items-center gap-2">
-          <span>☀️</span> Fox ESS Solar Telemetry Platform
+        <h1 class="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-white flex items-center gap-2">
+          <span>☀️</span> Home Energy Platform
         </h1>
-        <p class="text-sm text-slate-400 mt-1">
-          High-resolution 5-minute telemetry with Octopus Go tariff & standing charge modelling
+        <p class="text-xs sm:text-sm text-slate-400 mt-0.5">
+          Live telemetry, battery dynamics, and Octopus Go financial ledger
         </p>
       </div>
-      <div class="flex items-center gap-3">
-        <button id="btn-reset-zoom" onclick="resetZoom()" class="hidden px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/40 hover:bg-amber-500/30 transition">
-          Reset Filter to All Days
+      <div class="flex items-center gap-2 sm:gap-3 w-full sm:w-auto justify-between sm:justify-end">
+        <button id="btn-reset-zoom" onclick="resetZoom()" class="hidden px-2.5 py-1 rounded-lg text-xs font-semibold bg-amber-500/10 text-amber-300 border border-amber-500/30 hover:bg-amber-500/20 transition">
+          Reset Filter
         </button>
-        <div id="status-badge" class="px-3 py-1.5 rounded-full text-xs font-medium bg-slate-800 text-slate-300 border border-slate-700 flex items-center gap-2">
-          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-          <span id="latest-timestamp">Loading telemetry...</span>
+        <div id="status-badge" class="px-3 py-1 rounded-full text-xs font-medium bg-slate-900 text-slate-300 border border-slate-800 flex items-center gap-2 shadow-sm">
+          <span id="status-dot" class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span id="latest-timestamp">Connecting...</span>
         </div>
       </div>
     </header>
 
-    <!-- Top Live Status Row -->
-    <section class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-      <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-sm">
-        <p class="text-xs font-semibold uppercase tracking-wider text-amber-400">Solar Yield</p>
-        <p class="text-2xl font-bold mt-1 text-white" id="stat-pv">0.00 <span class="text-sm font-normal text-slate-400">kW</span></p>
-        <span class="text-xs text-slate-500">Live Inverter Output</span>
-      </div>
+    <!-- 1. HOUSEHOLD OPERATOR INSIGHT HERO CARD -->
+    <section class="bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950 border border-slate-800 rounded-2xl p-4 sm:p-6 shadow-md">
+      <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-5">
+        <div class="space-y-1.5 flex-1">
+          <div class="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-800/90 text-slate-300 border border-slate-700/60">
+            <span id="household-status-dot" class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+            <span id="household-status-title">Assessing Power State...</span>
+          </div>
+          <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-white tracking-tight" id="household-action-lead">
+            Evaluating generation and storage...
+          </h2>
+          <p class="text-xs sm:text-sm text-slate-400 max-w-2xl leading-relaxed" id="household-action-desc">
+            Reading latest 5-minute inverter telemetry.
+          </p>
+        </div>
 
-      <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-sm">
-        <p class="text-xs font-semibold uppercase tracking-wider text-rose-400">Home Load</p>
-        <p class="text-2xl font-bold mt-1 text-white" id="stat-load">0.00 <span class="text-sm font-normal text-slate-400">kW</span></p>
-        <span class="text-xs text-slate-500">Current Consumption</span>
-      </div>
-
-      <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-sm">
-        <p class="text-xs font-semibold uppercase tracking-wider text-emerald-400">Battery SoC</p>
-        <p class="text-2xl font-bold mt-1 text-white" id="stat-soc">0 <span class="text-sm font-normal text-slate-400">%</span></p>
-        <span class="text-xs text-slate-500" id="stat-bat-flow">0.00 kW Idle</span>
-      </div>
-
-      <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-sm">
-        <p class="text-xs font-semibold uppercase tracking-wider text-blue-400">Grid Feed</p>
-        <p class="text-2xl font-bold mt-1 text-white" id="stat-grid">0.00 <span class="text-sm font-normal text-slate-400">kW</span></p>
-        <span class="text-xs text-slate-500" id="stat-grid-direction">Net Import</span>
-      </div>
-
-      <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-sm col-span-2 sm:col-span-1">
-        <p class="text-xs font-semibold uppercase tracking-wider text-purple-400">Battery Temp</p>
-        <p class="text-2xl font-bold mt-1 text-white" id="stat-temp">0.0 <span class="text-sm font-normal text-slate-400">°C</span></p>
-        <span class="text-xs text-slate-500">Pack Status: Nominal</span>
-      </div>
-    </section>
-
-    <!-- Financial & Window Summaries -->
-    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      <div class="bg-slate-900/60 border border-slate-800/80 rounded-xl p-4">
-        <span class="text-xs text-slate-400">Window Solar Generated</span>
-        <p class="text-xl font-bold text-amber-300 mt-1" id="kpi-gen-kwh">0.0 kWh</p>
-        <span class="text-xs text-slate-500" id="kpi-gen-savings">Direct Savings: £0.00</span>
-      </div>
-
-      <div class="bg-slate-900/60 border border-slate-800/80 rounded-xl p-4">
-        <span class="text-xs text-slate-400">Total Import Cost (inc. Standing Charge)</span>
-        <p class="text-xl font-bold text-rose-300 mt-1" id="kpi-import-cost">£0.00</p>
-        <span class="text-xs text-slate-500" id="kpi-import-breakdown">Energy: £0.00 | SC: £0.00</span>
-      </div>
-
-      <div class="bg-slate-900/60 border border-slate-800/80 rounded-xl p-4">
-        <span class="text-xs text-slate-400">Grid Export Earnings</span>
-        <p class="text-xl font-bold text-emerald-300 mt-1" id="kpi-export-rev">£0.00</p>
-        <span class="text-xs text-slate-500" id="kpi-export-kwh">0.0 kWh exported @ 15p</span>
-      </div>
-
-      <div class="bg-slate-900/60 border border-slate-800/80 rounded-xl p-4">
-        <span class="text-xs text-slate-400">Net Utility Position</span>
-        <p class="text-xl font-bold text-white mt-1" id="kpi-net-cost">£0.00</p>
-        <span class="text-xs text-slate-500" id="kpi-net-desc">Net Utility Balance</span>
-      </div>
-    </section>
-
-    <!-- Main Chart: Power Flow -->
-    <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 md:p-6 shadow-sm">
-      <div class="flex justify-between items-center mb-4">
-        <div>
-          <h2 class="text-lg font-semibold text-white">Power Dynamics (kW)</h2>
-          <p class="text-xs text-slate-400">5-minute interval solar, load, battery, and grid exchange</p>
+        <!-- At-a-Glance Operational Badges -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-3 w-full lg:w-auto">
+          <div class="bg-slate-950/70 border border-slate-800/80 rounded-xl p-3 text-center sm:text-left">
+            <span class="text-[11px] text-slate-400 font-medium block">Appliance Status</span>
+            <span class="text-sm font-bold text-emerald-300 mt-0.5 block" id="badge-appliances">--</span>
+          </div>
+          <div class="bg-slate-950/70 border border-slate-800/80 rounded-xl p-3 text-center sm:text-left">
+            <span class="text-[11px] text-slate-400 font-medium block">Grid Reliance</span>
+            <span class="text-sm font-bold text-white mt-0.5 block" id="badge-grid-reliance">--</span>
+          </div>
+          <div class="bg-slate-950/70 border border-slate-800/80 rounded-xl p-3 col-span-2 sm:col-span-1 text-center sm:text-left">
+            <span class="text-[11px] text-slate-400 font-medium block">Est. Battery Reserve</span>
+            <span class="text-sm font-bold text-amber-300 mt-0.5 block" id="badge-battery-reserve">--</span>
+          </div>
         </div>
       </div>
-      <div id="chart-power" class="w-full h-80 md:h-96"></div>
-    </div>
+    </section>
 
-    <!-- Dual Sub-Charts Grid -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 md:p-6 shadow-sm">
-        <h2 class="text-lg font-semibold text-white">Battery State of Charge & Flow</h2>
-        <p class="text-xs text-slate-400 mb-4">SoC % vs instantaneous charge/discharge power</p>
-        <div id="chart-battery" class="w-full h-72"></div>
+    <!-- 2. INSTANTANEOUS METRIC CARDS -->
+    <section class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+      <div class="bg-slate-900/90 border border-slate-800/90 rounded-xl p-3.5 sm:p-4 shadow-sm">
+        <p class="text-[11px] font-semibold uppercase tracking-wider text-amber-400">Solar Generation</p>
+        <p class="text-xl sm:text-2xl font-bold mt-1 text-white" id="stat-pv">0.00 <span class="text-xs font-normal text-slate-400">kW</span></p>
+        <span class="text-[11px] text-slate-500 mt-0.5 block">Live Array Yield</span>
       </div>
 
-      <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 md:p-6 shadow-sm">
-        <h2 class="text-lg font-semibold text-white">Daily Energy Totals (kWh)</h2>
-        <p class="text-xs text-slate-400 mb-4">Aggregated daily solar yield, import, and export</p>
-        <div id="chart-daily" class="w-full h-72"></div>
+      <div class="bg-slate-900/90 border border-slate-800/90 rounded-xl p-3.5 sm:p-4 shadow-sm">
+        <p class="text-[11px] font-semibold uppercase tracking-wider text-rose-400">Home Demand</p>
+        <p class="text-xl sm:text-2xl font-bold mt-1 text-white" id="stat-load">0.00 <span class="text-xs font-normal text-slate-400">kW</span></p>
+        <span class="text-[11px] text-slate-500 mt-0.5 block">Household Usage</span>
       </div>
-    </div>
 
-    <!-- INTERACTIVE DAILY TOTALS LEDGER SECTION -->
-    <section class="bg-slate-900 border border-slate-800 rounded-xl p-4 md:p-6 shadow-sm space-y-4">
-      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div class="bg-slate-900/90 border border-slate-800/90 rounded-xl p-3.5 sm:p-4 shadow-sm">
+        <p class="text-[11px] font-semibold uppercase tracking-wider text-emerald-400">Battery Level</p>
+        <p class="text-xl sm:text-2xl font-bold mt-1 text-white" id="stat-soc">0 <span class="text-xs font-normal text-slate-400">%</span></p>
+        <span class="text-[11px] text-slate-400 mt-0.5 block truncate" id="stat-bat-flow">0.00 kW Idle</span>
+      </div>
+
+      <div class="bg-slate-900/90 border border-slate-800/90 rounded-xl p-3.5 sm:p-4 shadow-sm">
+        <p class="text-[11px] font-semibold uppercase tracking-wider text-sky-400">Grid Activity</p>
+        <p class="text-xl sm:text-2xl font-bold mt-1 text-white" id="stat-grid">0.00 <span class="text-xs font-normal text-slate-400">kW</span></p>
+        <span class="text-[11px] text-slate-400 mt-0.5 block" id="stat-grid-direction">Net Neutral</span>
+      </div>
+
+      <div class="bg-slate-900/90 border border-slate-800/90 rounded-xl p-3.5 sm:p-4 shadow-sm col-span-2 sm:col-span-1">
+        <p class="text-[11px] font-semibold uppercase tracking-wider text-indigo-400">Battery Temp</p>
+        <p class="text-xl sm:text-2xl font-bold mt-1 text-white" id="stat-temp">0.0 <span class="text-xs font-normal text-slate-400">°C</span></p>
+        <span class="text-[11px] text-slate-500 mt-0.5 block">Pack Temperature</span>
+      </div>
+    </section>
+
+    <!-- 3. FINANCIAL SUMMARY -->
+    <section class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      <div class="bg-slate-900/50 border border-slate-800/80 rounded-xl p-3.5 sm:p-4">
+        <span class="text-[11px] text-slate-400 block font-medium">Window Solar Yield</span>
+        <p class="text-lg sm:text-xl font-bold text-amber-300 mt-0.5" id="kpi-gen-kwh">0.0 kWh</p>
+        <span class="text-[11px] text-slate-500 block truncate" id="kpi-gen-savings">Direct Savings: £0.00</span>
+      </div>
+
+      <div class="bg-slate-900/50 border border-slate-800/80 rounded-xl p-3.5 sm:p-4">
+        <span class="text-[11px] text-slate-400 block font-medium">Total Utility Spend</span>
+        <p class="text-lg sm:text-xl font-bold text-rose-300 mt-0.5" id="kpi-import-cost">£0.00</p>
+        <span class="text-[11px] text-slate-500 block truncate" id="kpi-import-breakdown">Energy: £0.00 | SC: £0.00</span>
+      </div>
+
+      <div class="bg-slate-900/50 border border-slate-800/80 rounded-xl p-3.5 sm:p-4">
+        <span class="text-[11px] text-slate-400 block font-medium">Grid Export Revenue</span>
+        <p class="text-lg sm:text-xl font-bold text-emerald-300 mt-0.5" id="kpi-export-rev">£0.00</p>
+        <span class="text-[11px] text-slate-500 block truncate" id="kpi-export-kwh">0.0 kWh exported</span>
+      </div>
+
+      <div class="bg-slate-900/50 border border-slate-800/80 rounded-xl p-3.5 sm:p-4">
+        <span class="text-[11px] text-slate-400 block font-medium">Net Position</span>
+        <p class="text-lg sm:text-xl font-bold text-white mt-0.5" id="kpi-net-cost">£0.00</p>
+        <span class="text-[11px] text-slate-500 block" id="kpi-net-desc">Net Balance</span>
+      </div>
+    </section>
+
+    <!-- 4. MAIN POWER DYNAMICS CHART -->
+    <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-3.5 sm:p-5 shadow-sm">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-3 gap-2">
         <div>
-          <h2 class="text-lg font-semibold text-white flex items-center gap-2">
+          <h2 class="text-base sm:text-lg font-semibold text-white">Power Dynamics (kW)</h2>
+          <p class="text-xs text-slate-400">5-minute interval solar generation, consumption, and storage flows</p>
+        </div>
+      </div>
+      <div id="chart-power" class="w-full h-72 sm:h-80 md:h-96"></div>
+    </div>
+
+    <!-- 5. DUAL SECONDARY CHARTS -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+      <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-3.5 sm:p-5 shadow-sm">
+        <h2 class="text-base sm:text-lg font-semibold text-white">Battery State of Charge & Flow</h2>
+        <p class="text-xs text-slate-400 mb-3">SoC % vs charging / discharging rate (kW)</p>
+        <div id="chart-battery" class="w-full h-64 sm:h-72"></div>
+      </div>
+
+      <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-3.5 sm:p-5 shadow-sm">
+        <h2 class="text-base sm:text-lg font-semibold text-white">Daily Energy Totals (kWh)</h2>
+        <p class="text-xs text-slate-400 mb-3">Aggregated daily solar yield, grid import, and export</p>
+        <div id="chart-daily" class="w-full h-64 sm:h-72"></div>
+      </div>
+    </div>
+
+    <!-- 6. INTERACTIVE DAILY TOTALS LEDGER -->
+    <section class="bg-slate-900/90 border border-slate-800 rounded-2xl p-3.5 sm:p-6 shadow-sm space-y-4">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+        <div>
+          <h2 class="text-base sm:text-lg font-semibold text-white flex items-center gap-2">
             <span>📅</span> Daily Energy & Financial Ledger
           </h2>
           <p class="text-xs text-slate-400 mt-0.5">
-            Click any row to drill down into that day's 5-minute telemetry curves. Click headers to sort.
+            Select a row to zoom the timeline to that day. Click any column header to sort.
           </p>
         </div>
-        <div class="flex items-center gap-3 w-full md:w-auto">
+        <div class="flex items-center gap-2.5 w-full sm:w-auto">
           <input
             type="text"
             id="table-search"
-            placeholder="Search dates (e.g. 2026-09)..."
-            class="bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500 w-full md:w-56"
+            placeholder="Search dates..."
+            class="bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500 w-full sm:w-44"
             oninput="handleSearch(this.value)"
           />
           <button
             onclick="exportTableToCSV()"
             class="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition flex items-center gap-1.5 shrink-0"
           >
-            <span>📥</span> Export CSV
+            <span>📥</span> CSV
           </button>
         </div>
       </div>
 
-      <div class="overflow-x-auto rounded-lg border border-slate-800/80">
+      <div class="overflow-x-auto rounded-xl border border-slate-800/80">
         <table class="w-full text-left text-xs whitespace-nowrap divide-y divide-slate-800">
-          <thead class="bg-slate-950/70 text-slate-400 font-semibold tracking-wider select-none">
+          <thead class="bg-slate-950/80 text-slate-400 font-semibold tracking-wider select-none">
             <tr>
               <th onclick="sortTable('date')" class="py-3 px-3 cursor-pointer hover:text-white transition">
                 Date <span id="sort-date">↕</span>
@@ -177,25 +217,25 @@
                 Solar Yield <span id="sort-gen">↕</span>
               </th>
               <th onclick="sortTable('load')" class="py-3 px-3 cursor-pointer hover:text-white transition text-right text-rose-400">
-                Total Load <span id="sort-load">↕</span>
+                Home Load <span id="sort-load">↕</span>
               </th>
-              <th onclick="sortTable('imp')" class="py-3 px-3 cursor-pointer hover:text-white transition text-right text-blue-400">
+              <th onclick="sortTable('imp')" class="py-3 px-3 cursor-pointer hover:text-white transition text-right text-sky-400">
                 Grid Import <span id="sort-imp">↕</span>
               </th>
               <th onclick="sortTable('exp')" class="py-3 px-3 cursor-pointer hover:text-white transition text-right text-emerald-400">
                 Grid Export <span id="sort-exp">↕</span>
               </th>
               <th onclick="sortTable('autonomy')" class="py-3 px-3 cursor-pointer hover:text-white transition text-center">
-                Self-Sufficiency <span id="sort-autonomy">↕</span>
+                Independence <span id="sort-autonomy">↕</span>
               </th>
               <th onclick="sortTable('energyCost')" class="py-3 px-3 cursor-pointer hover:text-white transition text-right text-slate-300">
                 Energy Cost <span id="sort-energyCost">↕</span>
               </th>
               <th onclick="sortTable('standingCharge')" class="py-3 px-3 cursor-pointer hover:text-white transition text-right text-slate-400">
-                Standing Charge <span id="sort-standingCharge">↕</span>
+                Standing Chg <span id="sort-standingCharge">↕</span>
               </th>
               <th onclick="sortTable('totalImportCost')" class="py-3 px-3 cursor-pointer hover:text-white transition text-right text-rose-300">
-                Total Cost <span id="sort-totalImportCost">↕</span>
+                Total Bill <span id="sort-totalImportCost">↕</span>
               </th>
               <th onclick="sortTable('rev')" class="py-3 px-3 cursor-pointer hover:text-white transition text-right text-emerald-300">
                 Export Rev <span id="sort-rev">↕</span>
@@ -203,49 +243,92 @@
               <th onclick="sortTable('net')" class="py-3 px-3 cursor-pointer hover:text-white transition text-right">
                 Net Position <span id="sort-net">↕</span>
               </th>
-              <th class="py-3 px-3 text-center">Action</th>
+              <th class="py-3 px-3 text-center">View</th>
             </tr>
           </thead>
           <tbody id="daily-table-body" class="divide-y divide-slate-800/60 bg-slate-900/40 font-mono">
-            <!-- Rows rendered dynamically -->
           </tbody>
         </table>
       </div>
-      <div id="table-summary-bar" class="text-xs text-slate-500 flex justify-between pt-1">
+      <div class="text-[11px] text-slate-500 flex flex-col sm:flex-row justify-between gap-1 pt-1">
         <span id="table-row-count">Showing 0 days</span>
-        <span>Standing charge: 52.0p/day • Energy rates modelled on Octopus Go</span>
+        <span>Standing charge fixed at 52.0p/day • Unit rates modelled on Octopus Go</span>
       </div>
     </section>
 
-    <footer class="text-center text-xs text-slate-600 py-6">
-      Fox ESS Automated Lakehouse Platform • Hosted on GitHub Pages
+    <!-- Footer -->
+    <footer class="text-center text-xs text-slate-600 py-6 border-t border-slate-900">
+      Fox ESS Solar Telemetry Platform • Automated via GitHub Actions
     </footer>
   </div>
 
   <script>
-    const DATA_URL = 'data/silver/telemetry_5min.json';
-    const DAILY_STANDING_CHARGE_GBP = 0.52; // Octopus Go South East standing charge (£0.52/day)
+    // Append timestamp query parameter to bypass browser and CDN cache
+    const DATA_URL = `data/silver/telemetry_5min.json?_t=${Date.now()}`;
+    const DAILY_STANDING_CHARGE_GBP = 0.52;
 
     let rawDataset = [];
     let aggregatedDays = [];
     let filteredDays = [];
     let powerChartInstance = null;
     let currentSortCol = 'date';
-    let currentSortAsc = false; // default newest first
+    let currentSortAsc = false;
+
+    // Helper: Formats timestamps directly without timezone double-conversion
+    function cleanTimestamp(rawString) {
+      if (!rawString) return 'Pending sync';
+      
+      // Extract standard YYYY-MM-DD HH:mm:ss format
+      let str = rawString.replace('T', ' ');
+      // Strip any timezone suffix like +01:00 or Z
+      str = str.replace(/(\+\d{2}:\d{2}|Z).*$/, '').trim();
+
+      // Check if the timestamp was accidentally shifted into the future
+      try {
+        const parts = str.match(/(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})/);
+        if (parts) {
+          const year = parseInt(parts[1], 10);
+          const month = parseInt(parts[2], 10) - 1;
+          const day = parseInt(parts[3], 10);
+          const hour = parseInt(parts[4], 10);
+          const min = parseInt(parts[5], 10);
+          const sec = parseInt(parts[6], 10);
+
+          const recordDate = new Date(year, month, day, hour, min, sec);
+          const nowDate = new Date();
+
+          // If the record claims to be more than 15 minutes in the future, correct the 1 or 2 hour offset artifact
+          const diffMinutes = (recordDate.getTime() - nowDate.getTime()) / 60000;
+          if (diffMinutes > 45 && diffMinutes < 150) {
+            const correctedHours = Math.round(diffMinutes / 60);
+            recordDate.setHours(recordDate.getHours() - correctedHours);
+            const pad = (n) => String(n).padStart(2, '0');
+            return `${pad(recordDate.getDate())}/${pad(recordDate.getMonth() + 1)}/${recordDate.getFullYear()} ${pad(recordDate.getHours())}:${pad(recordDate.getMinutes())}:${pad(recordDate.getSeconds())}`;
+          }
+
+          const pad = (n) => String(n).padStart(2, '0');
+          return `${pad(day)}/${pad(month + 1)}/${year} ${pad(hour)}:${pad(min)}:${pad(sec)}`;
+        }
+      } catch (e) {
+        console.warn('Timestamp parsing fallback:', e);
+      }
+      return str;
+    }
 
     async function loadDashboard() {
       try {
-        const response = await fetch(DATA_URL);
+        const response = await fetch(DATA_URL, { cache: 'no-store' });
         if (!response.ok) throw new Error(`HTTP ${response.status} loading telemetry data`);
         rawDataset = await response.json();
 
         if (!rawDataset || rawDataset.length === 0) {
-          document.getElementById('latest-timestamp').innerText = 'No telemetry records found';
+          document.getElementById('latest-timestamp').innerText = 'No records found';
           return;
         }
 
         buildDailyAggregates(rawDataset);
         renderLatestCards(rawDataset);
+        renderHouseholdHero(rawDataset);
         renderCharts(rawDataset);
         renderTable();
       } catch (err) {
@@ -295,19 +378,83 @@
         };
       });
 
-      // Default newest day at top
       aggregatedDays.sort((a, b) => b.date.localeCompare(a.date));
       filteredDays = [...aggregatedDays];
+    }
+
+    function renderHouseholdHero(dataset) {
+      const latest = dataset[dataset.length - 1];
+      const pv = latest.pv_power_kw || 0.0;
+      const load = latest.loads_power_kw || 0.0;
+      const soc = latest.battery_soc_pct || 0;
+      const imp = latest.grid_consumption_kw || 0.0;
+
+      const surplus = pv - load;
+
+      const leadEl = document.getElementById('household-action-lead');
+      const descEl = document.getElementById('household-action-desc');
+      const statusTitleEl = document.getElementById('household-status-title');
+      const dotEl = document.getElementById('household-status-dot');
+      const badgeAppEl = document.getElementById('badge-appliances');
+      const badgeGridEl = document.getElementById('badge-grid-reliance');
+      const badgeReserveEl = document.getElementById('badge-battery-reserve');
+
+      if (surplus > 1.2 && soc > 40) {
+        dotEl.className = 'w-1.5 h-1.5 rounded-full bg-emerald-400';
+        statusTitleEl.innerText = 'High Solar Surplus';
+        leadEl.innerText = `Generating ${surplus.toFixed(1)} kW surplus solar power`;
+        descEl.innerText = `Solar output (${pv.toFixed(1)} kW) easily covers your current home demand (${load.toFixed(1)} kW). Great time to run the dishwasher, washing machine, or tumble dryer for free.`;
+        badgeAppEl.innerText = 'Recommended';
+        badgeAppEl.className = 'text-sm font-bold text-emerald-300 mt-0.5 block';
+      } else if (surplus > 0.2) {
+        dotEl.className = 'w-1.5 h-1.5 rounded-full bg-emerald-400';
+        statusTitleEl.innerText = 'Self-Sufficient (Solar Covering Demand)';
+        leadEl.innerText = 'Home is running completely on solar';
+        descEl.innerText = `Solar yield is currently meeting your home needs with a mild surplus (${surplus.toFixed(2)} kW) feeding the battery.`;
+        badgeAppEl.innerText = 'Low Draw OK';
+        badgeAppEl.className = 'text-sm font-bold text-emerald-300 mt-0.5 block';
+      } else if (imp < 0.1 && soc > 20) {
+        dotEl.className = 'w-1.5 h-1.5 rounded-full bg-sky-400';
+        statusTitleEl.innerText = 'Self-Sufficient (Battery Supplying Home)';
+        leadEl.innerText = `Running off-grid from home battery (${soc}%)`;
+        descEl.innerText = `The home is drawing ${load.toFixed(2)} kW cleanly from the battery with zero peak grid import.`;
+        badgeAppEl.innerText = 'Stagger Loads';
+        badgeAppEl.className = 'text-sm font-bold text-slate-300 mt-0.5 block';
+      } else {
+        dotEl.className = 'w-1.5 h-1.5 rounded-full bg-amber-400';
+        statusTitleEl.innerText = 'Drawing Grid Power';
+        leadEl.innerText = `Drawing ${imp.toFixed(2)} kW from the grid`;
+        descEl.innerText = `Household consumption exceeds current solar yield and battery discharge. Defer running heavy appliances until overnight off-peak or tomorrow's solar.`;
+        badgeAppEl.innerText = 'Defer If Possible';
+        badgeAppEl.className = 'text-sm font-bold text-amber-300 mt-0.5 block';
+      }
+
+      if (imp <= 0.05) {
+        badgeGridEl.innerText = 'Zero Grid Draw';
+      } else {
+        badgeGridEl.innerText = `${imp.toFixed(2)} kW Import`;
+      }
+
+      const estimatedKwhRemaining = (soc / 100.0) * 10.0;
+      if (load > 0.15) {
+        const hoursLeft = estimatedKwhRemaining / load;
+        badgeReserveEl.innerText = `${soc}% (~${Math.round(hoursLeft)}h runtime)`;
+      } else {
+        badgeReserveEl.innerText = `${soc}% (Reserve)`;
+      }
     }
 
     function renderLatestCards(dataset) {
       const latest = dataset[dataset.length - 1];
 
-      document.getElementById('latest-timestamp').innerText = `Updated: ${new Date(latest.reading_timestamp_local).toLocaleString('en-GB')}`;
-      document.getElementById('stat-pv').innerHTML = `${latest.pv_power_kw.toFixed(2)} <span class="text-sm font-normal text-slate-400">kW</span>`;
-      document.getElementById('stat-load').innerHTML = `${latest.loads_power_kw.toFixed(2)} <span class="text-sm font-normal text-slate-400">kW</span>`;
-      document.getElementById('stat-soc').innerHTML = `${latest.battery_soc_pct.toFixed(0)} <span class="text-sm font-normal text-slate-400">%</span>`;
-      document.getElementById('stat-temp').innerHTML = `${(latest.battery_temp_celsius || 0).toFixed(1)} <span class="text-sm font-normal text-slate-400">°C</span>`;
+      // Update the badge with the clean timestamp
+      const formattedTs = cleanTimestamp(latest.reading_timestamp_local || latest.reading_timestamp_utc);
+      document.getElementById('latest-timestamp').innerText = `Updated: ${formattedTs}`;
+
+      document.getElementById('stat-pv').innerHTML = `${(latest.pv_power_kw || 0).toFixed(2)} <span class="text-xs font-normal text-slate-400">kW</span>`;
+      document.getElementById('stat-load').innerHTML = `${(latest.loads_power_kw || 0).toFixed(2)} <span class="text-xs font-normal text-slate-400">kW</span>`;
+      document.getElementById('stat-soc').innerHTML = `${(latest.battery_soc_pct || 0).toFixed(0)} <span class="text-xs font-normal text-slate-400">%</span>`;
+      document.getElementById('stat-temp').innerHTML = `${(latest.battery_temp_celsius || 0).toFixed(1)} <span class="text-xs font-normal text-slate-400">°C</span>`;
 
       const batFlow = latest.battery_charge_kw > 0
         ? `+${latest.battery_charge_kw.toFixed(2)} kW Charging`
@@ -316,11 +463,10 @@
         : '0.00 kW Idle';
       document.getElementById('stat-bat-flow').innerText = batFlow;
 
-      const netGrid = latest.grid_consumption_kw - latest.grid_feed_in_kw;
-      document.getElementById('stat-grid').innerHTML = `${Math.abs(netGrid).toFixed(2)} <span class="text-sm font-normal text-slate-400">kW</span>`;
+      const netGrid = (latest.grid_consumption_kw || 0) - (latest.grid_feed_in_kw || 0);
+      document.getElementById('stat-grid').innerHTML = `${Math.abs(netGrid).toFixed(2)} <span class="text-xs font-normal text-slate-400">kW</span>`;
       document.getElementById('stat-grid-direction').innerText = netGrid >= 0 ? 'Net Grid Import' : 'Exporting to Grid';
 
-      // Cumulative summary over all days (including standing charges)
       let sumGenKwh = 0, sumImportKwh = 0, sumExportKwh = 0;
       let sumEnergyCost = 0, sumStandingCharge = 0, sumTotalCost = 0, sumExportRev = 0, sumSolarSavings = 0;
 
@@ -348,48 +494,45 @@
     }
 
     function renderCharts(dataset) {
-      const timestamps = dataset.map(d => d.reading_timestamp_local.replace('T', ' ').slice(0, 16));
+      const timestamps = dataset.map(d => {
+        const raw = d.reading_timestamp_local || d.reading_timestamp_utc || '';
+        return raw.replace('T', ' ').slice(0, 16);
+      });
       const socData = dataset.map(d => d.battery_soc_pct);
       const batPowerData = dataset.map(d => (d.battery_charge_kw || 0) - (d.battery_discharge_kw || 0));
 
       const darkTooltip = {
         trigger: 'axis',
-        backgroundColor: '#1e293b',
-        borderColor: '#334155',
-        textStyle: { color: '#f8fafc' }
+        backgroundColor: '#090d16',
+        borderColor: '#1e293b',
+        borderWidth: 1,
+        textStyle: { color: '#f8fafc', fontSize: 12 },
+        valueFormatter: (value) => (value != null ? `${Number(value).toFixed(2)} kW` : '0.00 kW')
       };
 
-// 1. Explicitly configured Power Dynamics chart
       powerChartInstance = echarts.init(document.getElementById('chart-power'));
       powerChartInstance.setOption({
-        color: ['#f59e0b', '#f43f5e', '#38bdf8', '#10b981'], // Locks series & legend colours identically
-        tooltip: {
-          trigger: 'axis',
-          backgroundColor: '#0f172a',
-          borderColor: '#334155',
-          borderWidth: 1,
-          textStyle: { color: '#f8fafc', fontSize: 12 },
-          valueFormatter: (value) => (value != null ? `${Number(value).toFixed(2)} kW` : '0.00 kW')
-        },
+        color: ['#f59e0b', '#f43f5e', '#38bdf8', '#10b981'],
+        tooltip: darkTooltip,
         legend: {
           data: ['Solar Yield', 'Home Load', 'Grid Import', 'Grid Export'],
-          textStyle: { color: '#cbd5e1', fontSize: 12 },
+          textStyle: { color: '#94a3b8', fontSize: 11 },
           icon: 'roundRect',
           top: 0
         },
-        grid: { left: '3%', right: '3%', bottom: '15%', top: '12%', containLabel: true },
+        grid: { left: '2%', right: '2%', bottom: '15%', top: '14%', containLabel: true },
         xAxis: {
           type: 'category',
           data: timestamps,
-          axisLine: { lineStyle: { color: '#334155' } },
-          axisLabel: { color: '#64748b' }
+          axisLine: { lineStyle: { color: '#1e293b' } },
+          axisLabel: { color: '#64748b', fontSize: 10 }
         },
         yAxis: {
           type: 'value',
-          name: 'Power (kW)',
-          nameTextStyle: { color: '#94a3b8' },
-          splitLine: { lineStyle: { color: '#1e293b' } },
-          axisLabel: { color: '#64748b' }
+          name: 'kW',
+          nameTextStyle: { color: '#64748b' },
+          splitLine: { lineStyle: { color: '#131b2e' } },
+          axisLabel: { color: '#64748b', fontSize: 10 }
         },
         dataZoom: [
           { id: 'dataZoomInside', type: 'inside', start: 70, end: 100 },
@@ -397,10 +540,10 @@
             id: 'dataZoomSlider', 
             type: 'slider', 
             bottom: '0%', 
-            height: 22, 
-            borderColor: '#334155', 
-            textStyle: { color: '#94a3b8' },
-            fillerColor: 'rgba(56, 189, 248, 0.15)',
+            height: 20, 
+            borderColor: '#1e293b', 
+            textStyle: { color: '#94a3b8', fontSize: 10 },
+            fillerColor: 'rgba(56, 189, 248, 0.12)',
             handleStyle: { color: '#38bdf8' }
           }
         ],
@@ -449,22 +592,21 @@
           }
         ]
       });
-      
-      // 2. Battery SoC & Flow
+
       const batChart = echarts.init(document.getElementById('chart-battery'));
       batChart.setOption({
         tooltip: darkTooltip,
         legend: {
-          data: ['Battery SoC (%)', 'Net Battery Flow (kW)'],
-          textStyle: { color: '#94a3b8' },
+          data: ['Battery SoC (%)', 'Battery Net Flow (kW)'],
+          textStyle: { color: '#94a3b8', fontSize: 11 },
           top: 0
         },
-        grid: { left: '3%', right: '3%', bottom: '10%', top: '15%', containLabel: true },
+        grid: { left: '2%', right: '2%', bottom: '10%', top: '15%', containLabel: true },
         xAxis: {
           type: 'category',
           data: timestamps,
-          axisLine: { lineStyle: { color: '#334155' } },
-          axisLabel: { color: '#64748b' }
+          axisLine: { lineStyle: { color: '#1e293b' } },
+          axisLabel: { color: '#64748b', fontSize: 10 }
         },
         yAxis: [
           {
@@ -472,14 +614,14 @@
             name: 'SoC %',
             min: 0,
             max: 100,
-            splitLine: { lineStyle: { color: '#1e293b' } },
-            axisLabel: { color: '#64748b' }
+            splitLine: { lineStyle: { color: '#131b2e' } },
+            axisLabel: { color: '#64748b', fontSize: 10 }
           },
           {
             type: 'value',
-            name: 'Flow (kW)',
+            name: 'kW',
             splitLine: { show: false },
-            axisLabel: { color: '#64748b' }
+            axisLabel: { color: '#64748b', fontSize: 10 }
           }
         ],
         series: [
@@ -490,16 +632,16 @@
             smooth: true,
             showSymbol: false,
             data: socData,
-            lineStyle: { color: '#10b981', width: 2.5 },
+            lineStyle: { color: '#10b981', width: 2 },
             areaStyle: {
               color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                { offset: 0, color: 'rgba(16, 185, 129, 0.3)' },
+                { offset: 0, color: 'rgba(16, 185, 129, 0.25)' },
                 { offset: 1, color: 'rgba(16, 185, 129, 0.0)' }
               ])
             }
           },
           {
-            name: 'Net Battery Flow (kW)',
+            name: 'Battery Net Flow (kW)',
             type: 'bar',
             yAxisIndex: 1,
             data: batPowerData,
@@ -512,31 +654,37 @@
         ]
       });
 
-      // 3. Daily Totals Bar Chart
       const dayKeys = [...aggregatedDays].reverse().map(d => d.date);
       const dailyChart = echarts.init(document.getElementById('chart-daily'));
       const dayMap = {};
       aggregatedDays.forEach(d => { dayMap[d.date] = d; });
 
       dailyChart.setOption({
-        tooltip: darkTooltip,
+        tooltip: {
+          trigger: 'axis',
+          backgroundColor: '#090d16',
+          borderColor: '#1e293b',
+          borderWidth: 1,
+          textStyle: { color: '#f8fafc', fontSize: 12 },
+          valueFormatter: (value) => `${Number(value).toFixed(1)} kWh`
+        },
         legend: {
           data: ['Solar Generation', 'Grid Import', 'Grid Export'],
-          textStyle: { color: '#94a3b8' },
+          textStyle: { color: '#94a3b8', fontSize: 11 },
           top: 0
         },
-        grid: { left: '3%', right: '3%', bottom: '10%', top: '15%', containLabel: true },
+        grid: { left: '2%', right: '2%', bottom: '10%', top: '15%', containLabel: true },
         xAxis: {
           type: 'category',
           data: dayKeys,
-          axisLine: { lineStyle: { color: '#334155' } },
-          axisLabel: { color: '#64748b' }
+          axisLine: { lineStyle: { color: '#1e293b' } },
+          axisLabel: { color: '#64748b', fontSize: 10 }
         },
         yAxis: {
           type: 'value',
-          name: 'Energy (kWh)',
-          splitLine: { lineStyle: { color: '#1e293b' } },
-          axisLabel: { color: '#64748b' }
+          name: 'kWh',
+          splitLine: { lineStyle: { color: '#131b2e' } },
+          axisLabel: { color: '#64748b', fontSize: 10 }
         },
         series: [
           {
@@ -549,7 +697,7 @@
             name: 'Grid Import',
             type: 'bar',
             data: dayKeys.map(k => dayMap[k].imp.toFixed(1)),
-            itemStyle: { color: '#3b82f6' }
+            itemStyle: { color: '#38bdf8' }
           },
           {
             name: 'Grid Export',
@@ -567,8 +715,6 @@
       });
     }
 
-    // --- DAILY TABLE LOGIC ---
-
     function renderTable() {
       const tbody = document.getElementById('daily-table-body');
       tbody.innerHTML = '';
@@ -581,38 +727,37 @@
 
       filteredDays.forEach(day => {
         const tr = document.createElement('tr');
-        tr.className = 'hover:bg-slate-800/50 cursor-pointer transition';
+        tr.className = 'hover:bg-slate-800/40 cursor-pointer transition';
 
-        let autonomyBadge = 'bg-rose-500/20 text-rose-300 border-rose-500/30';
-        if (day.autonomy >= 80) autonomyBadge = 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30';
-        else if (day.autonomy >= 50) autonomyBadge = 'bg-amber-500/20 text-amber-300 border-amber-500/30';
+        let autonomyBadge = 'bg-rose-500/10 text-rose-300 border-rose-500/30';
+        if (day.autonomy >= 80) autonomyBadge = 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30';
+        else if (day.autonomy >= 50) autonomyBadge = 'bg-amber-500/10 text-amber-300 border-amber-500/30';
 
         const netClass = day.net <= 0 ? 'text-emerald-400 font-bold' : 'text-slate-300';
         const netFormatted = day.net <= 0 ? `-£${Math.abs(day.net).toFixed(2)} (Credit)` : `£${day.net.toFixed(2)}`;
 
         tr.innerHTML = `
-          <td class="py-3 px-3 text-white font-medium flex items-center gap-2">
+          <td class="py-2.5 px-3 text-white font-medium flex items-center gap-1.5">
             <span>📅</span> ${day.date}
           </td>
-          <td class="py-3 px-3 text-right text-amber-400 font-bold">${day.gen.toFixed(1)} kWh</td>
-          <td class="py-3 px-3 text-right text-rose-400">${day.load.toFixed(1)} kWh</td>
-          <td class="py-3 px-3 text-right text-blue-400">${day.imp.toFixed(1)} kWh</td>
-          <td class="py-3 px-3 text-right text-emerald-400">${day.exp.toFixed(1)} kWh</td>
-          <td class="py-3 px-3 text-center">
-            <span class="inline-block px-2 py-0.5 rounded-full text-xs border ${autonomyBadge}">
+          <td class="py-2.5 px-3 text-right text-amber-400 font-bold">${day.gen.toFixed(1)} kWh</td>
+          <td class="py-2.5 px-3 text-right text-rose-400">${day.load.toFixed(1)} kWh</td>
+          <td class="py-2.5 px-3 text-right text-sky-400">${day.imp.toFixed(1)} kWh</td>
+          <td class="py-2.5 px-3 text-right text-emerald-400">${day.exp.toFixed(1)} kWh</td>
+          <td class="py-2.5 px-3 text-center">
+            <span class="inline-block px-2 py-0.5 rounded-full text-[11px] border ${autonomyBadge}">
               ${day.autonomy.toFixed(0)}%
             </span>
           </td>
-          <td class="py-3 px-3 text-right text-slate-300">£${day.energyCost.toFixed(2)}</td>
-          <td class="py-3 px-3 text-right text-slate-400">£${day.standingCharge.toFixed(2)}</td>
-          <td class="py-3 px-3 text-right text-rose-300 font-semibold">£${day.totalImportCost.toFixed(2)}</td>
-          <td class="py-3 px-3 text-right text-emerald-300">£${day.rev.toFixed(2)}</td>
-          <td class="py-3 px-3 text-right ${netClass}">${netFormatted}</td>
-          <td class="py-3 px-3 text-center">
+          <td class="py-2.5 px-3 text-right text-slate-300">£${day.energyCost.toFixed(2)}</td>
+          <td class="py-2.5 px-3 text-right text-slate-400">£${day.standingCharge.toFixed(2)}</td>
+          <td class="py-2.5 px-3 text-right text-rose-300 font-semibold">£${day.totalImportCost.toFixed(2)}</td>
+          <td class="py-2.5 px-3 text-right text-emerald-300">£${day.rev.toFixed(2)}</td>
+          <td class="py-2.5 px-3 text-right ${netClass}">${netFormatted}</td>
+          <td class="py-2.5 px-3 text-center">
             <button
               onclick="zoomToDay('${day.date}'); event.stopPropagation();"
-              class="px-2 py-1 rounded bg-slate-800 hover:bg-amber-500 hover:text-slate-950 text-slate-300 text-xs font-sans transition"
-              title="Filter timeseries to this day"
+              class="px-2 py-0.5 rounded bg-slate-800 hover:bg-amber-500 hover:text-slate-950 text-slate-300 text-[11px] font-sans transition"
             >
               Zoom
             </button>
@@ -665,7 +810,7 @@
     function zoomToDay(targetDate) {
       if (!powerChartInstance || rawDataset.length === 0) return;
 
-      const timestamps = rawDataset.map(d => d.reading_timestamp_local.slice(0, 10));
+      const timestamps = rawDataset.map(d => (d.reading_timestamp_local || d.reading_timestamp_utc || '').slice(0, 10));
       const firstIdx = timestamps.indexOf(targetDate);
       const lastIdx = timestamps.lastIndexOf(targetDate);
 
@@ -683,7 +828,7 @@
       });
 
       document.getElementById('btn-reset-zoom').classList.remove('hidden');
-      document.getElementById('btn-reset-zoom').innerText = `Filter Active: ${targetDate} (Click to Reset)`;
+      document.getElementById('btn-reset-zoom').innerText = `Active Filter: ${targetDate} (Reset)`;
       document.getElementById('chart-power').scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 
@@ -707,12 +852,12 @@
         'Load (kWh)',
         'Grid Import (kWh)',
         'Grid Export (kWh)',
-        'Self Sufficiency (%)',
+        'Independence (%)',
         'Energy Cost (GBP)',
         'Standing Charge (GBP)',
-        'Total Import Cost (GBP)',
-        'Export Rev (GBP)',
-        'Net Cost (GBP)'
+        'Total Bill (GBP)',
+        'Export Revenue (GBP)',
+        'Net Position (GBP)'
       ];
 
       const rows = aggregatedDays.map(d => [
@@ -733,7 +878,7 @@
       const encodedUri = encodeURI(csvContent);
       const link = document.createElement('a');
       link.setAttribute('href', encodedUri);
-      link.setAttribute('download', `solar_daily_totals_${new Date().toISOString().slice(0, 10)}.csv`);
+      link.setAttribute('download', `solar_daily_ledger_${new Date().toISOString().slice(0, 10)}.csv`);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
