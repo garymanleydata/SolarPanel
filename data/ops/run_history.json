@@ -1,5 +1,27 @@
 [
   {
+    "run_timestamp_utc": "2026-09-28T16:01:07.022989+00:00",
+    "execution_duration_seconds": 1.68,
+    "lookback_hours_requested": 4.0,
+    "latest_telemetry_timestamp_utc": "2026-09-28T17:58:31+00:00",
+    "telemetry_freshness_lag_minutes": -117.4,
+    "health_status": "HEALTHY",
+    "contract_passed": true,
+    "metrics": {
+      "passed": true,
+      "status_level": "HEALTHY",
+      "total_records_evaluated": 4544,
+      "new_records_count": 12,
+      "schema_violations_count": 0,
+      "schema_violations_sample": [],
+      "boundary_violations_count": 0,
+      "boundary_violations_sample": [],
+      "monotonicity_violations_count": 0,
+      "monotonicity_violations_sample": [],
+      "power_balance_warnings_count": 0
+    }
+  },
+  {
     "run_timestamp_utc": "2026-09-28T15:01:05.395653+00:00",
     "execution_duration_seconds": 0.96,
     "lookback_hours_requested": 4.0,
