@@ -9,14 +9,19 @@ from pathlib import Path
 import sys
 import time as time_mod
 from typing import Any, Dict, List, Optional
+from zoneinfo import ZoneInfo
 from dateutil import parser as dt_parser
 from dotenv import load_dotenv
 import requests
+
+# Import C&J Data Quality & Verification Module
+import data_quality
 
 # 1. Deterministic Path Resolution
 PROJECT_ROOT = Path(__file__).resolve().parent
 DATA_DIR = PROJECT_ROOT / "data" / "silver"
 OUTPUT_FILE_PATH = DATA_DIR / "telemetry_5min.json"
+UK_TZ = ZoneInfo("Europe/London")
 
 # Load .env explicitly from the script root
 load_dotenv(PROJECT_ROOT / ".env")
@@ -70,7 +75,7 @@ OCTOPUS_GO_CONFIG = {
     "peak_rate_p_kwh": 25.50,
     "export_rate_p_kwh": 15.00,  # Outgoing Octopus Fixed
     "off_peak_start": time(0, 30),
-    "off_peak_end": time(4, 30),
+    "off_peak_end": time(5, 30),  # Corrected off-peak window to 05:30
 }
 
 
@@ -134,7 +139,6 @@ def fetch_historical_window(
     all_raw_slices = []
     current_start = earliest_utc
 
-    # Chunk into max 24-hour slices
     step = timedelta(hours=24)
     slices: List[tuple[datetime, datetime]] = []
 
@@ -157,7 +161,6 @@ def fetch_historical_window(
         except Exception as exc:
             print(f"    Warning: Slice {idx} failed: {exc}")
 
-        # Graceful pause between multi-slice iterations
         if idx < len(slices):
             time_mod.sleep(0.5)
 
@@ -194,11 +197,16 @@ def transform_history_to_silver(
 
                 if raw_time not in records_by_time:
                     parsed_dt = dt_parser.parse(raw_time)
-                    utc_dt = parsed_dt.astimezone(timezone.utc)
+                    # Proper UK timezone handling to avoid double-offset drift
+                    if parsed_dt.tzinfo is None:
+                        local_dt = parsed_dt.replace(tzinfo=UK_TZ)
+                    else:
+                        local_dt = parsed_dt.astimezone(UK_TZ)
+                    utc_dt = local_dt.astimezone(timezone.utc)
 
                     records_by_time[raw_time] = {
                         "reading_timestamp_utc": utc_dt.isoformat(),
-                        "reading_timestamp_local": parsed_dt.isoformat(),
+                        "reading_timestamp_local": local_dt.strftime("%Y-%m-%d %H:%M:%S"),
                         "inverter_id": inverter_surrogate,
                         "pv_power_kw": 0.0,
                         "loads_power_kw": 0.0,
@@ -225,9 +233,9 @@ def transform_history_to_silver(
     return list(records_by_time.values())
 
 
-def is_off_peak(local_time_iso: str) -> bool:
-    """Checks whether local time falls within Octopus Go 00:30-04:30 off-peak window."""
-    parsed_dt = dt_parser.parse(local_time_iso)
+def is_off_peak(local_time_str: str) -> bool:
+    """Checks whether local time falls within Octopus Go 00:30-05:30 off-peak window."""
+    parsed_dt = dt_parser.parse(local_time_str)
     check_time = parsed_dt.time()
     return (
         OCTOPUS_GO_CONFIG["off_peak_start"]
@@ -252,7 +260,6 @@ def compute_interval_metrics_and_costs(
         )
         export_rate = OCTOPUS_GO_CONFIG["export_rate_p_kwh"]
 
-        # Default fallback calculation via trapezoidal power (kW / 12 for 5-minute ticks)
         fallback_import_kwh = curr.get("grid_consumption_kw", 0.0) / 12.0
         fallback_export_kwh = curr.get("grid_feed_in_kw", 0.0) / 12.0
         fallback_gen_kwh = curr.get("pv_power_kw", 0.0) / 12.0
@@ -307,8 +314,11 @@ def compute_interval_metrics_and_costs(
     return sorted_records
 
 
-def merge_and_persist(new_records: List[Dict[str, Any]]) -> int:
-    """Merges incoming telemetry records idempotently with historical data."""
+def merge_and_persist(new_records: List[Dict[str, Any]], lookback_hours: float, start_time_mono: float) -> int:
+    """
+    Merges incoming telemetry records idempotently with historical data,
+    executing Phase 1b verification before committing to disk.
+    """
     existing_records: Dict[str, Dict[str, Any]] = {}
 
     if OUTPUT_FILE_PATH.exists():
@@ -320,13 +330,37 @@ def merge_and_persist(new_records: List[Dict[str, Any]]) -> int:
         except Exception as exc:
             print(f"Warning: Could not parse existing dataset: {exc}")
 
+    # Track how many brand-new timestamps arrived in this batch
+    initial_keys = set(existing_records.keys())
     for item in new_records:
         existing_records[item["reading_timestamp_utc"]] = item
+    new_records_count = len(set(existing_records.keys()) - initial_keys)
 
     sorted_dataset = [
         existing_records[k] for k in sorted(existing_records.keys())
     ]
     enriched_dataset = compute_interval_metrics_and_costs(sorted_dataset)
+
+    # --- PHASE 1b: VERIFICATION & DATA CONTRACT GATE ---
+    print("\n--- Running Data Quality & Invariant Verification Gate ---")
+    verification = data_quality.verify_dataset_invariants(enriched_dataset)
+    verification.new_records_count = new_records_count
+
+    latest_utc = enriched_dataset[-1]["reading_timestamp_utc"] if enriched_dataset else ""
+    duration_sec = time_mod.monotonic() - start_time_mono
+
+    # Record operational health status to data/ops/run_status.json
+    data_quality.record_pipeline_run_status(
+        verification=verification,
+        execution_duration_sec=duration_sec,
+        lookback_hours=lookback_hours,
+        latest_record_utc=latest_utc,
+    )
+
+    # Circuit Breaker: Halt commit if schema or physical boundaries failed critically
+    if not verification.passed:
+        print("[CRITICAL] Data Quality Gate FAILED. Halting commit to prevent database corruption.")
+        raise RuntimeError("Data contract violations detected; pipeline halted by circuit breaker.")
 
     OUTPUT_FILE_PATH.parent.mkdir(parents=True, exist_ok=True)
     with open(OUTPUT_FILE_PATH, "w", encoding="utf-8") as f:
@@ -350,13 +384,11 @@ def parse_duration_hours() -> float:
     )
     args, _ = parser.parse_known_args()
 
-    # 1. Direct CLI arguments
     if args.days is not None:
         return args.days * 24.0
     if args.hours is not None:
         return args.hours
 
-    # 2. Environment variables
     env_days = os.getenv("BACKFILL_DAYS")
     if env_days:
         try:
@@ -371,11 +403,11 @@ def parse_duration_hours() -> float:
         except ValueError:
             pass
 
-    # 3. Default fallback: 4 hours (ideal for 1-hour GitHub Actions schedule)
     return 4.0
 
 
 def main() -> None:
+    start_time_mono = time_mod.monotonic()
     api_key = os.getenv("FOX_API_KEY")
     device_sn = os.getenv("FOX_DEVICE_SN")
 
@@ -389,7 +421,7 @@ def main() -> None:
     raw_slices = fetch_historical_window(api_key, device_sn, hours_to_fetch)
     silver_batch = transform_history_to_silver(raw_slices)
 
-    total_count = merge_and_persist(silver_batch)
+    total_count = merge_and_persist(silver_batch, hours_to_fetch, start_time_mono)
     print(f"\nTarget Path: {OUTPUT_FILE_PATH}")
     print(
         f"Pipeline complete. Master dataset now contains {total_count} enriched 5-minute records."
