@@ -1,0 +1,1037 @@
+<!DOCTYPE html>
+<html lang="en-GB" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Operations & Data Governance Centre</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Apache ECharts CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              solar: '#f59e0b',
+              load: '#f43f5e',
+              battery: '#10b981',
+              grid: '#38bdf8',
+              card: '#0f172a',
+              border: '#1e293b'
+            }
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    ::-webkit-scrollbar { height: 6px; width: 6px; }
+    ::-webkit-scrollbar-track { background: #020617; }
+    ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 3px; }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen p-3 sm:p-6 md:p-8 font-sans antialiased selection:bg-cyan-500 selection:text-slate-950">
+  <div class="max-w-7xl mx-auto space-y-6">
+
+    <!-- TOP HEADER -->
+    <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-800 pb-4 gap-3">
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="text-2xl">🛡️</span>
+          <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-white">
+            Operations & Data Trust Centre
+          </h1>
+          <span class="px-2 py-0.5 rounded text-[11px] font-mono font-semibold bg-cyan-950 text-cyan-400 border border-cyan-800">
+            Platform Governance
+          </span>
+        </div>
+        <p class="text-xs sm:text-sm text-slate-400 mt-1">
+          Lakehouse platform observability, automated data contracts & lineage architecture
+        </p>
+      </div>
+      
+      <div class="flex items-center gap-2.5 flex-wrap sm:flex-nowrap">
+        <div id="next-run-badge" class="px-3 py-1 rounded-full text-xs font-mono bg-slate-900 text-amber-300 border border-amber-500/30 flex items-center gap-1.5 shadow-sm">
+          <span>⏳</span>
+          <span id="next-run-countdown">Next run: Calculating...</span>
+        </div>
+        <a href="index.html" class="px-3 py-1 rounded-lg text-xs font-medium bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700 transition flex items-center gap-1.5">
+          <span>←</span> Household View
+        </a>
+      </div>
+    </header>
+
+    <!-- TAB NAVIGATION BAR -->
+    <div class="border-b border-slate-800 flex gap-2 overflow-x-auto text-sm font-medium">
+      <button onclick="switchTab('tab-telemetry')" id="btn-tab-telemetry" class="px-4 py-2.5 border-b-2 border-cyan-400 text-cyan-400 flex items-center gap-1.5 transition">
+        <span>📊</span> Run Observability
+      </button>
+      <button onclick="switchTab('tab-retention')" id="btn-tab-retention" class="px-4 py-2.5 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-1.5 transition">
+        <span>🗄️</span> Data Retention &amp; Gold Audits
+      </button>
+      <button onclick="switchTab('tab-lineage')" id="btn-tab-lineage" class="px-4 py-2.5 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-1.5 transition">
+        <span>🔗</span> Pipeline Lineage (DAG)
+      </button>
+      <button onclick="switchTab('tab-adrs')" id="btn-tab-adrs" class="px-4 py-2.5 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-1.5 transition">
+        <span>📑</span> Architecture Decision Records (ADRs)
+      </button>
+      <button onclick="switchTab('tab-iar')" id="btn-tab-iar" class="px-4 py-2.5 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-1.5 transition">
+        <span>📖</span> Information Asset Register
+      </button>
+    </div>
+
+    <!-- TAB 1: RUN OBSERVABILITY & SLA SCORECARD -->
+    <div id="tab-telemetry" class="space-y-6">
+
+      <!-- SLA & DATA TRUST SCORECARD -->
+      <section class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+        
+        <!-- Freshness Card -->
+        <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-sm relative overflow-hidden">
+          <div class="flex justify-between items-start">
+            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Freshness SLA</span>
+            <span id="sla-badge" class="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">Target &lt;120m</span>
+          </div>
+          <p class="text-2xl sm:text-3xl font-bold font-mono mt-2 text-white" id="stat-lag">--</p>
+          <span class="text-[11px] text-slate-400 mt-1 block truncate" id="stat-freshness-sub">Awaiting telemetry sync...</span>
+        </div>
+
+        <!-- Next Sync Countdown Card -->
+        <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-sm">
+          <div class="flex justify-between items-start">
+            <span class="text-xs font-semibold text-amber-400 uppercase tracking-wider">Next Sync Due</span>
+            <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-amber-500/10 text-amber-400 border border-amber-500/30">Hourly (:00)</span>
+          </div>
+          <p class="text-2xl sm:text-3xl font-bold font-mono mt-2 text-amber-300" id="stat-next-due">--</p>
+          <span class="text-[11px] text-slate-400 mt-1 block" id="stat-next-due-sub">cron-job.org dispatch</span>
+        </div>
+
+        <!-- Invariant Health -->
+        <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-sm">
+          <div class="flex justify-between items-start">
+            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Contract Invariants</span>
+            <span id="contract-badge" class="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">HEALTHY</span>
+          </div>
+          <p class="text-2xl sm:text-3xl font-bold font-mono mt-2 text-white" id="stat-invariants">100%</p>
+          <span class="text-[11px] text-slate-400 mt-1 block truncate" id="stat-violations-sub">0 schema/domain violations</span>
+        </div>
+
+        <!-- Gold Reconciliation Card -->
+        <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-sm">
+          <div class="flex justify-between items-start">
+            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Gold Reconcile</span>
+            <span id="gold-badge" class="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">HEALTHY</span>
+          </div>
+          <p class="text-2xl sm:text-3xl font-bold font-mono mt-2 text-amber-300" id="stat-gold-delta">0.00 kWh</p>
+          <span class="text-[11px] text-slate-400 mt-1 block truncate" id="stat-gold-sub">Silver vs Gold delta</span>
+        </div>
+
+        <!-- Retention Governance Card -->
+        <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-sm">
+          <div class="flex justify-between items-start">
+            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Data Lifecycle</span>
+            <span id="retention-badge" class="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">COMPLIANT</span>
+          </div>
+          <p class="text-2xl sm:text-3xl font-bold font-mono mt-2 text-cyan-300" id="stat-retention-pruned">0</p>
+          <span class="text-[11px] text-slate-400 mt-1 block truncate" id="stat-retention-sub">Pruned on last run</span>
+        </div>
+      </section>
+
+      <!-- RUN PERFORMANCE & ROW INGESTION TIME-SERIES -->
+      <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-sm space-y-2">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-1">
+          <div>
+            <h2 class="text-base font-semibold text-white">Pipeline Execution Performance & Record Ingestion</h2>
+            <p class="text-xs text-slate-400">Duration (seconds) and newly appended records per execution run</p>
+          </div>
+          <span class="text-xs text-slate-400 font-mono" id="chart-subtext">Rolling run audit trail</span>
+        </div>
+        <div id="chart-execution" class="w-full h-64 sm:h-72"></div>
+      </div>
+
+      <!-- AUDIT LOG & RECENT RUNS TABLE -->
+      <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-sm space-y-4">
+        <div class="flex justify-between items-center">
+          <div>
+            <h2 class="text-base font-semibold text-white flex items-center gap-2">
+              <span>📋</span> Operational Audit Ledger
+            </h2>
+            <p class="text-xs text-slate-400">Granular record of pre-commit quality gate evaluations</p>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto rounded-xl border border-slate-800">
+          <table class="w-full text-left text-xs whitespace-nowrap divide-y divide-slate-800">
+            <thead class="bg-slate-950/80 text-slate-400 font-semibold uppercase font-mono tracking-wider">
+              <tr>
+                <th class="py-3 px-3">Run Timestamp (UTC)</th>
+                <th class="py-3 px-3">Status</th>
+                <th class="py-3 px-3 text-right">Runtime (s)</th>
+                <th class="py-3 px-3 text-right">Total Evaluated</th>
+                <th class="py-3 px-3 text-right">New Appended</th>
+                <th class="py-3 px-3 text-center">Schema Faults</th>
+                <th class="py-3 px-3 text-center">Domain Faults</th>
+                <th class="py-3 px-3 text-center">Monotonic Drops</th>
+              </tr>
+            </thead>
+            <tbody id="runs-table-body" class="divide-y divide-slate-800/60 bg-slate-900/40 font-mono">
+              <tr>
+                <td colspan="8" class="text-center py-6 text-slate-500 font-sans">
+                  Awaiting operational run status data from <code>data/ops/run_history.json</code>...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: DATA RETENTION & GOLD AUDITS -->
+    <div id="tab-retention" class="hidden space-y-6">
+      <!-- Gold Verification Summary Banner -->
+      <section class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 sm:p-6 shadow-sm space-y-4">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+          <div>
+            <h2 class="text-base sm:text-lg font-semibold text-white flex items-center gap-2">
+              <span>⚖️</span> Gold Tier Reconciliation &amp; Invariant Gate
+            </h2>
+            <p class="text-xs text-slate-400 mt-0.5">
+              Automated reconciliation proving mathematical parity between Silver interval records and Gold daily ledgers.
+            </p>
+          </div>
+          <span id="gold-last-verified" class="text-xs font-mono text-slate-400">Awaiting audit sync...</span>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div class="bg-slate-950/70 border border-slate-800/80 rounded-xl p-3">
+            <span class="text-[11px] text-slate-400 block font-medium">Reconciliation Invariant</span>
+            <span class="text-sm sm:text-base font-bold text-emerald-400 mt-0.5 block" id="gold-reconcile-status">Verified (&lt;0.05 kWh)</span>
+          </div>
+          <div class="bg-slate-950/70 border border-slate-800/80 rounded-xl p-3">
+            <span class="text-[11px] text-slate-400 block font-medium">Daily Completeness</span>
+            <span class="text-sm sm:text-base font-bold text-white mt-0.5 block" id="gold-days-status">--</span>
+          </div>
+          <div class="bg-slate-950/70 border border-slate-800/80 rounded-xl p-3">
+            <span class="text-[11px] text-slate-400 block font-medium">30-Day Window Table</span>
+            <span class="text-sm sm:text-base font-bold text-amber-300 mt-0.5 block" id="gold-recent-records">-- rows</span>
+          </div>
+          <div class="bg-slate-950/70 border border-slate-800/80 rounded-xl p-3">
+            <span class="text-[11px] text-slate-400 block font-medium">DST Clock Tolerance</span>
+            <span class="text-sm sm:text-base font-bold text-cyan-300 mt-0.5 block">276h / 288h / 300h</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Declarative Retention Audit Table -->
+      <section class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 sm:p-6 shadow-sm space-y-4">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+          <div>
+            <h2 class="text-base sm:text-lg font-semibold text-white flex items-center gap-2">
+              <span>🗄️</span> Declarative Lifecycle Policy Audits
+            </h2>
+            <p class="text-xs text-slate-400 mt-0.5">
+              Live status from <code>retention_manager.py</code> enforcing <code>config/retention_rules.json</code>.
+            </p>
+          </div>
+          <span id="retention-last-run" class="text-xs font-mono text-slate-400">Awaiting status...</span>
+        </div>
+
+        <div class="overflow-x-auto rounded-xl border border-slate-800">
+          <table class="w-full text-left text-xs whitespace-nowrap divide-y divide-slate-800">
+            <thead class="bg-slate-950/80 text-slate-400 font-semibold uppercase font-mono tracking-wider">
+              <tr>
+                <th class="py-3 px-3">Table Identifier</th>
+                <th class="py-3 px-3">Layer / Grain</th>
+                <th class="py-3 px-3">Enforced Strategy</th>
+                <th class="py-3 px-3 text-right">Evaluated</th>
+                <th class="py-3 px-3 text-right">Pruned</th>
+                <th class="py-3 px-3 text-right">Retained</th>
+                <th class="py-3 px-3">Oldest Record Boundary</th>
+                <th class="py-3 px-3 text-center">Compliance</th>
+              </tr>
+            </thead>
+            <tbody id="retention-table-body" class="divide-y divide-slate-800/60 bg-slate-900/40 font-mono">
+              <tr>
+                <td colspan="8" class="text-center py-6 text-slate-500 font-sans">
+                  Awaiting audit telemetry from <code>data/ops/retention_status.json</code>...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <!-- TAB 2: PIPELINE LINEAGE (DAG) -->
+    <div id="tab-lineage" class="hidden space-y-6">
+      <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 sm:p-6 shadow-sm space-y-4">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+          <div>
+            <h2 class="text-base sm:text-lg font-semibold text-white flex items-center gap-2">
+              <span>🔗</span> End-to-End Medallion Data Lineage &amp; Circuit Breaker DAG
+            </h2>
+            <p class="text-xs text-slate-400 mt-1">
+              Multi-stage execution flow: ingestion quality gate, dual-table Gold transformations, declarative retention, and presentation delivery.
+            </p>
+          </div>
+          <!-- Lineage Status Legend -->
+          <div class="flex items-center gap-3 text-xs bg-slate-950 px-3 py-1.5 rounded-lg border border-slate-800 shrink-0">
+            <span class="flex items-center gap-1.5 text-emerald-400">
+              <span class="w-3 h-0.5 bg-emerald-400 inline-block"></span> Active Production
+            </span>
+            <span class="flex items-center gap-1.5 text-amber-400">
+              <span class="w-3 h-0.5 border-t border-dashed border-amber-400 inline-block"></span> Proposed / In Development
+            </span>
+          </div>
+        </div>
+
+        <!-- Resilient Visual Vector Lineage Diagram -->
+        <div class="bg-slate-950 p-4 sm:p-6 rounded-xl border border-slate-800/80 overflow-x-auto flex justify-center">
+          <svg class="w-full max-w-5xl h-auto" viewBox="0 0 980 430" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="boxGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#1e293b"/>
+                <stop offset="100%" stop-color="#0f172a"/>
+              </linearGradient>
+              <marker id="arrow-active" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 1 L 10 5 L 0 9 z" fill="#10b981"/>
+              </marker>
+              <marker id="arrow-downstream" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 1 L 10 5 L 0 9 z" fill="#38bdf8"/>
+              </marker>
+              <marker id="arrow-gold" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 1 L 10 5 L 0 9 z" fill="#f59e0b"/>
+              </marker>
+              <marker id="arrow-retention" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 1 L 10 5 L 0 9 z" fill="#a855f7"/>
+              </marker>
+            </defs>
+
+            <!-- 1. SOURCES -->
+            <rect x="15" y="40" width="155" height="58" rx="8" fill="url(#boxGrad)" stroke="#10b981" stroke-width="2"/>
+            <rect x="23" y="47" width="46" height="14" rx="3" fill="#064e3b"/>
+            <text x="46" y="57" fill="#34d399" font-size="8" font-weight="bold" text-anchor="middle" font-family="monospace">ACTIVE</text>
+            <text x="92" y="73" fill="#f8fafc" font-size="11.5" font-weight="bold" text-anchor="middle" font-family="sans-serif">Fox ESS Cloud API</text>
+            <text x="92" y="86" fill="#94a3b8" font-size="9" text-anchor="middle" font-family="sans-serif">Inverter 5-min intervals</text>
+
+            <rect x="15" y="125" width="155" height="58" rx="8" fill="url(#boxGrad)" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="4,4"/>
+            <rect x="23" y="132" width="60" height="14" rx="3" fill="#78350f"/>
+            <text x="53" y="142" fill="#fbbf24" font-size="8" font-weight="bold" text-anchor="middle" font-family="monospace">PROPOSED</text>
+            <text x="92" y="158" fill="#f8fafc" font-size="11.5" font-weight="bold" text-anchor="middle" font-family="sans-serif">Octopus REST API</text>
+            <text x="92" y="171" fill="#94a3b8" font-size="9" text-anchor="middle" font-family="sans-serif">Live Region J Rates</text>
+
+            <!-- CONNECTOR LINES TO PIPELINE SYNC -->
+            <path d="M 170 69 L 225 69" stroke="#10b981" stroke-width="2" marker-end="url(#arrow-active)"/>
+            <path d="M 170 154 L 225 80" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="4,4"/>
+
+            <!-- STEP 1: PIPELINE SYNC & QUALITY GATE -->
+            <rect x="230" y="32" width="175" height="74" rx="8" fill="url(#boxGrad)" stroke="#38bdf8" stroke-width="1.5"/>
+            <text x="317" y="55" fill="#f8fafc" font-size="12" font-weight="bold" text-anchor="middle" font-family="sans-serif">1. pipeline_sync.py</text>
+            <text x="317" y="72" fill="#34d399" font-size="10" text-anchor="middle" font-family="sans-serif">data_quality.py Gate</text>
+            <text x="317" y="88" fill="#94a3b8" font-size="9.5" text-anchor="middle" font-family="sans-serif">Circuit breaker &amp; deltas</text>
+
+            <!-- CONNECTOR LINE TO SILVER -->
+            <path d="M 405 69 L 455 69" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow-downstream)"/>
+
+            <!-- SILVER MASTER TABLE -->
+            <rect x="460" y="35" width="155" height="68" rx="8" fill="url(#boxGrad)" stroke="#10b981" stroke-width="2"/>
+            <text x="537" y="57" fill="#34d399" font-size="10" font-weight="bold" text-anchor="middle" font-family="monospace">SILVER MASTER</text>
+            <text x="537" y="74" fill="#f8fafc" font-size="11.5" font-weight="bold" text-anchor="middle" font-family="sans-serif">telemetry_5min.json</text>
+            <text x="537" y="89" fill="#94a3b8" font-size="9" text-anchor="middle" font-family="sans-serif">Full historical log</text>
+
+            <!-- CONNECTOR LINE TO GOLD TRANSFORM -->
+            <path d="M 537 103 L 537 145" stroke="#f59e0b" stroke-width="2" marker-end="url(#arrow-gold)"/>
+
+            <!-- STEP 2: GOLD TRANSFORM -->
+            <rect x="450" y="150" width="175" height="70" rx="8" fill="url(#boxGrad)" stroke="#f59e0b" stroke-width="1.5"/>
+            <text x="537" y="173" fill="#f8fafc" font-size="12" font-weight="bold" text-anchor="middle" font-family="sans-serif">2. gold_transform.py</text>
+            <text x="537" y="190" fill="#f59e0b" font-size="10" text-anchor="middle" font-family="sans-serif">Reconciliation &amp; DST checks</text>
+            <text x="537" y="206" fill="#94a3b8" font-size="9" text-anchor="middle" font-family="sans-serif">Dual-table compiler</text>
+
+            <!-- CONNECTOR LINES TO GOLD TABLES -->
+            <path d="M 625 170 L 685 135" stroke="#f59e0b" stroke-width="1.8" marker-end="url(#arrow-gold)"/>
+            <path d="M 625 195 L 685 220" stroke="#f59e0b" stroke-width="1.8" marker-end="url(#arrow-gold)"/>
+
+            <!-- GOLD TABLES -->
+            <rect x="690" y="105" width="165" height="58" rx="8" fill="url(#boxGrad)" stroke="#f59e0b" stroke-width="1.5"/>
+            <text x="772" y="127" fill="#fbbf24" font-size="11" font-weight="bold" text-anchor="middle" font-family="sans-serif">telemetry_recent_30d.json</text>
+            <text x="772" y="143" fill="#94a3b8" font-size="9" text-anchor="middle" font-family="sans-serif">Gold Table 1 • Fast UI charts</text>
+
+            <rect x="690" y="195" width="165" height="58" rx="8" fill="url(#boxGrad)" stroke="#f59e0b" stroke-width="1.5"/>
+            <text x="772" y="217" fill="#fbbf24" font-size="11" font-weight="bold" text-anchor="sans-serif" font-family="sans-serif">daily_rollups.json</text>
+            <text x="772" y="233" fill="#94a3b8" font-size="9" text-anchor="middle" font-family="sans-serif">Gold Table 2 • 5-Yr Ledger</text>
+
+            <!-- CONNECTOR LINES TO RETENTION MANAGER -->
+            <path d="M 772 253 L 772 295" stroke="#a855f7" stroke-width="2" marker-end="url(#arrow-retention)"/>
+
+            <!-- STEP 3: RETENTION MANAGER -->
+            <rect x="680" y="300" width="185" height="72" rx="8" fill="url(#boxGrad)" stroke="#a855f7" stroke-width="1.5"/>
+            <text x="772" y="323" fill="#f8fafc" font-size="12" font-weight="bold" text-anchor="middle" font-family="sans-serif">3. retention_manager.py</text>
+            <text x="772" y="340" fill="#c084fc" font-size="10" text-anchor="middle" font-family="sans-serif">config/retention_rules.json</text>
+            <text x="772" y="356" fill="#94a3b8" font-size="9" text-anchor="middle" font-family="sans-serif">Prunes 30d window &amp; ops caps</text>
+
+            <!-- DOWNSTREAM PRESENTATION -->
+            <path d="M 855 134 L 905 134" stroke="#38bdf8" stroke-width="1.5" marker-end="url(#arrow-downstream)"/>
+            <path d="M 855 224 L 905 224" stroke="#38bdf8" stroke-width="1.5" marker-end="url(#arrow-downstream)"/>
+
+            <rect x="910" y="105" width="60" height="150" rx="8" fill="url(#boxGrad)" stroke="#38bdf8" stroke-width="1.5"/>
+            <text x="940" y="160" fill="#38bdf8" font-size="11" font-weight="bold" text-anchor="middle" transform="rotate(90, 940, 160)" font-family="sans-serif">index.html (UI)</text>
+
+            <!-- OPS CENTRE CONNECTIONS -->
+            <path d="M 317 106 L 317 335 L 450 335" stroke="#38bdf8" stroke-width="1.5" stroke-dasharray="3,3" marker-end="url(#arrow-downstream)"/>
+            <path d="M 680 335 L 610 335" stroke="#a855f7" stroke-width="1.5" stroke-dasharray="3,3"/>
+
+            <rect x="450" y="305" width="160" height="60" rx="8" fill="url(#boxGrad)" stroke="#38bdf8" stroke-width="1.5"/>
+            <text x="530" y="328" fill="#38bdf8" font-size="11" font-weight="bold" text-anchor="middle" font-family="sans-serif">ops.html (Trust Centre)</text>
+            <text x="530" y="345" fill="#94a3b8" font-size="9" text-anchor="middle" font-family="sans-serif">data/ops/*.json audits</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: ARCHITECTURE DECISION RECORDS (ADRs) -->
+    <div id="tab-adrs" class="hidden space-y-4">
+      <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 sm:p-6 shadow-sm space-y-4">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+          <div>
+            <h2 class="text-base sm:text-lg font-semibold text-white flex items-center gap-2">
+              <span>📑</span> Architecture Decision Records (ADRs)
+            </h2>
+            <p class="text-xs text-slate-400 mt-1">
+              Formal architectural governance decisions rendered dynamically from <code>config/adrs.json</code>.
+            </p>
+          </div>
+          <span class="px-2.5 py-0.5 rounded text-[11px] font-mono bg-cyan-950 text-cyan-300 border border-cyan-800">
+            Declarative Governance
+          </span>
+        </div>
+
+        <div id="adrs-container" class="space-y-3">
+          <div class="text-center py-6 text-slate-500 font-sans text-xs">
+            Loading Architecture Decision Records from <code>config/adrs.json</code>...
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: INFORMATION ASSET REGISTER (IAR) -->
+    <div id="tab-iar" class="hidden space-y-6">
+      <!-- 1. DYNAMIC DATA ASSET CATALOG (Config-Driven) -->
+      <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 sm:p-6 shadow-sm space-y-4">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+          <div>
+            <h2 class="text-base sm:text-lg font-semibold text-white flex items-center gap-2">
+              <span>🗂️</span> Data Asset Catalog &amp; Retention Boundaries
+            </h2>
+            <p class="text-xs text-slate-400 mt-0.5">
+              Live catalogue rendered declaratively from <code>config/data_catalog.json</code> and <code>config/retention_rules.json</code>.
+            </p>
+          </div>
+          <span class="px-2.5 py-0.5 rounded text-[11px] font-mono bg-cyan-950 text-cyan-300 border border-cyan-800">
+            Declarative Governance
+          </span>
+        </div>
+
+        <div class="overflow-x-auto rounded-xl border border-slate-800">
+          <table class="w-full text-left text-xs whitespace-nowrap divide-y divide-slate-800">
+            <thead class="bg-slate-950/80 text-slate-400 font-semibold uppercase font-mono tracking-wider">
+              <tr>
+                <th class="py-3 px-3">Asset Name &amp; ID</th>
+                <th class="py-3 px-3">Layer</th>
+                <th class="py-3 px-3">Grain</th>
+                <th class="py-3 px-3">File Location</th>
+                <th class="py-3 px-3">Retention Policy</th>
+                <th class="py-3 px-3">Description</th>
+              </tr>
+            </thead>
+            <tbody id="catalog-table-body" class="divide-y divide-slate-800/60 bg-slate-900/40">
+              <tr>
+                <td colspan="6" class="text-center py-6 text-slate-500 font-sans">
+                  Loading data asset registry from <code>config/data_catalog.json</code>...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 2. PHYSICAL FIELD DATA DICTIONARY -->
+      <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 sm:p-6 shadow-sm space-y-4">
+        <div>
+          <h2 class="text-base sm:text-lg font-semibold text-white flex items-center gap-2">
+            <span>📖</span> Silver Layer Field Contract &amp; Data Dictionary
+          </h2>
+          <p class="text-xs text-slate-400 mt-1">
+            Physical field contracts and permissible domain boundaries enforced by the pre-commit quality gate.
+          </p>
+        </div>
+
+        <div class="overflow-x-auto rounded-xl border border-slate-800">
+          <table class="w-full text-left text-xs whitespace-nowrap divide-y divide-slate-800">
+            <thead class="bg-slate-950/80 text-slate-400 font-semibold uppercase font-mono tracking-wider">
+              <tr>
+                <th class="py-3 px-3">Field Name</th>
+                <th class="py-3 px-3">Type</th>
+                <th class="py-3 px-3">Unit</th>
+                <th class="py-3 px-3">Permissible Bounds</th>
+                <th class="py-3 px-3">Description &amp; Derivation</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-800/60 bg-slate-900/40 font-mono text-slate-300">
+              <tr>
+                <td class="py-2.5 px-3 text-cyan-300 font-bold">reading_timestamp_utc</td>
+                <td class="py-2.5 px-3 text-slate-400">string (ISO)</td>
+                <td class="py-2.5 px-3 text-slate-500">UTC</td>
+                <td class="py-2.5 px-3 text-slate-400">Past &lt;= now + 15m</td>
+                <td class="py-2.5 px-3 font-sans text-slate-300">Primary grain key for the 5-minute telemetry interval.</td>
+              </tr>
+              <tr>
+                <td class="py-2.5 px-3 text-cyan-300 font-bold">pv_power_kw</td>
+                <td class="py-2.5 px-3 text-slate-400">float</td>
+                <td class="py-2.5 px-3 text-amber-400">kW</td>
+                <td class="py-2.5 px-3 text-slate-400">0.0 to 10.0 kW</td>
+                <td class="py-2.5 px-3 font-sans text-slate-300">Instantaneous generation yield across East + West split arrays.</td>
+              </tr>
+              <tr>
+                <td class="py-2.5 px-3 text-cyan-300 font-bold">battery_soc_pct</td>
+                <td class="py-2.5 px-3 text-slate-400">int</td>
+                <td class="py-2.5 px-3 text-emerald-400">%</td>
+                <td class="py-2.5 px-3 text-slate-400">0 to 100%</td>
+                <td class="py-2.5 px-3 font-sans text-slate-300">Battery State of Charge reported by the BMS.</td>
+              </tr>
+              <tr>
+                <td class="py-2.5 px-3 text-cyan-300 font-bold">delta_grid_import_kwh</td>
+                <td class="py-2.5 px-3 text-slate-400">float</td>
+                <td class="py-2.5 px-3 text-sky-400">kWh</td>
+                <td class="py-2.5 px-3 text-slate-400">&gt;= 0.0 kWh</td>
+                <td class="py-2.5 px-3 font-sans text-slate-300">Grid energy consumed in the 5-min interval, derived from monotonic counter deltas.</td>
+              </tr>
+              <tr>
+                <td class="py-2.5 px-3 text-cyan-300 font-bold">cost_import_gbp</td>
+                <td class="py-2.5 px-3 text-slate-400">float</td>
+                <td class="py-2.5 px-3 text-rose-300">GBP (£)</td>
+                <td class="py-2.5 px-3 text-slate-400">&gt;= £0.00</td>
+                <td class="py-2.5 px-3 font-sans text-slate-300">Computed financial liability mapped against Octopus Go tariff schedules.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="text-center text-xs text-slate-600 py-6 border-t border-slate-900">
+      Solar &amp; Battery Operations Control Plane • Data Governance &amp; Observability Framework
+    </footer>
+  </div>
+
+  <script>
+    const OPS_STATUS_URL = `data/ops/run_status.json?_t=${Date.now()}`;
+    const OPS_HISTORY_URL = `data/ops/run_history.json?_t=${Date.now()}`;
+    const TELEMETRY_URL = `data/silver/telemetry_5min.json?_t=${Date.now()}`;
+    const GOLD_STATUS_URL = `data/ops/gold_status.json?_t=${Date.now()}`;
+    const RETENTION_STATUS_URL = `data/ops/retention_status.json?_t=${Date.now()}`;
+    const DATA_CATALOG_URL = `config/data_catalog.json?_t=${Date.now()}`;
+    const RETENTION_RULES_URL = `config/retention_rules.json?_t=${Date.now()}`;
+    const ADRS_URL = `config/adrs.json?_t=${Date.now()}`;
+
+    let execChartInstance = null;
+
+    // Defensive JSON fetcher to prevent SyntaxError: Unexpected token '<' on HTML error pages
+    async function safeFetchJson(url) {
+      try {
+        const res = await fetch(url, { cache: 'no-store' });
+        if (!res.ok) return null;
+        const text = await res.text();
+        const trimmed = text.trim();
+        if (!trimmed || trimmed.startsWith('<')) {
+          return null;
+        }
+        return JSON.parse(trimmed);
+      } catch (err) {
+        console.warn(`Safe fetch bypassed for ${url}:`, err);
+        return null;
+      }
+    }
+
+    // Switch between view tabs
+    function switchTab(tabId) {
+      ['tab-telemetry', 'tab-retention', 'tab-lineage', 'tab-adrs', 'tab-iar'].forEach(id => {
+        const el = document.getElementById(id);
+        const btn = document.getElementById(`btn-${id}`);
+        if (!el || !btn) return;
+        if (id === tabId) {
+          el.classList.remove('hidden');
+          btn.className = 'px-4 py-2.5 border-b-2 border-cyan-400 text-cyan-400 flex items-center gap-1.5 transition';
+        } else {
+          el.classList.add('hidden');
+          btn.className = 'px-4 py-2.5 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-1.5 transition';
+        }
+      });
+
+      if (tabId === 'tab-telemetry' && execChartInstance) {
+        setTimeout(() => execChartInstance.resize(), 50);
+      }
+    }
+
+    // Toggle ADR Accordion
+    function toggleAdr(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.toggle('hidden');
+    }
+
+    // Main dashboard loader
+    async function loadOpsData() {
+      try {
+        const [
+          statusData,
+          historyData,
+          telemetryData,
+          goldStatus,
+          retentionStatus,
+          catalogData,
+          rulesData,
+          adrsData
+        ] = await Promise.all([
+          safeFetchJson(OPS_STATUS_URL),
+          safeFetchJson(OPS_HISTORY_URL),
+          safeFetchJson(TELEMETRY_URL),
+          safeFetchJson(GOLD_STATUS_URL),
+          safeFetchJson(RETENTION_STATUS_URL),
+          safeFetchJson(DATA_CATALOG_URL),
+          safeFetchJson(RETENTION_RULES_URL),
+          safeFetchJson(ADRS_URL)
+        ]);
+
+        renderScorecard(statusData, telemetryData, goldStatus, retentionStatus);
+        renderRunHistory(historyData);
+        renderGoldAndRetentionAudits(goldStatus, retentionStatus);
+        renderDataCatalog(catalogData, rulesData);
+        renderAdrs(adrsData);
+      } catch (err) {
+        console.error('Operations dashboard load error:', err);
+      }
+    }
+
+    function renderScorecard(statusData, telemetryData, goldStatus, retentionStatus) {
+      let latestDate = null;
+      let rawDateStr = '';
+
+      if (telemetryData && telemetryData.length > 0) {
+        const lastRow = telemetryData[telemetryData.length - 1];
+        rawDateStr = lastRow.reading_timestamp_local || lastRow.reading_timestamp_utc || '';
+        latestDate = parseCleanDate(rawDateStr);
+      } else if (statusData && statusData.latest_telemetry_timestamp_utc) {
+        rawDateStr = statusData.latest_telemetry_timestamp_utc;
+        latestDate = parseCleanDate(rawDateStr);
+      }
+
+      if (latestDate && !isNaN(latestDate.getTime())) {
+        const now = new Date();
+        const diffMinutes = Math.max(0, Math.round((now.getTime() - latestDate.getTime()) / 60000));
+        document.getElementById('stat-lag').innerText = `${diffMinutes}m`;
+        
+        const pad = (n) => String(n).padStart(2, '0');
+        const timeFormatted = `${pad(latestDate.getHours())}:${pad(latestDate.getMinutes())}:${pad(latestDate.getSeconds())}`;
+        document.getElementById('stat-freshness-sub').innerText = `Latest reading at ${timeFormatted}`;
+
+        const slaBadge = document.getElementById('sla-badge');
+        if (diffMinutes <= 120) {
+          slaBadge.className = 'px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/30';
+          slaBadge.innerText = 'SLA Met (<120m)';
+        } else {
+          slaBadge.className = 'px-2 py-0.5 rounded text-[10px] font-mono bg-rose-500/10 text-rose-400 border border-rose-500/30';
+          slaBadge.innerText = 'SLA Breached';
+        }
+      } else {
+        document.getElementById('stat-lag').innerText = 'Syncing';
+        document.getElementById('stat-freshness-sub').innerText = 'Awaiting initial telemetry file';
+      }
+
+      if (statusData) {
+        const metrics = statusData.metrics || {};
+        const isHealthy = statusData.contract_passed !== false;
+        
+        const contractBadge = document.getElementById('contract-badge');
+        contractBadge.innerText = statusData.health_status || (isHealthy ? 'HEALTHY' : 'WARNING');
+        contractBadge.className = isHealthy 
+          ? 'px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
+          : 'px-2 py-0.5 rounded text-[10px] font-mono bg-amber-500/10 text-amber-400 border border-amber-500/30';
+
+        const faults = (metrics.schema_violations_count || 0) + (metrics.boundary_violations_count || 0);
+        document.getElementById('stat-invariants').innerText = faults === 0 ? '100%' : `${faults} faults`;
+        document.getElementById('stat-violations-sub').innerText = `${faults} schema/domain violations`;
+      }
+
+      if (goldStatus && goldStatus.metrics) {
+        const delta = goldStatus.metrics.energy_reconciliation_delta_kwh ?? 0.0;
+        document.getElementById('stat-gold-delta').innerText = `${delta.toFixed(3)} kWh`;
+        const badge = document.getElementById('gold-badge');
+        badge.innerText = goldStatus.status_level || 'HEALTHY';
+        badge.className = (goldStatus.reconciliation_passed)
+          ? 'px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
+          : 'px-2 py-0.5 rounded text-[10px] font-mono bg-rose-500/10 text-rose-400 border border-rose-500/30';
+      }
+
+      if (retentionStatus) {
+        const pruned = retentionStatus.total_records_pruned ?? 0;
+        document.getElementById('stat-retention-pruned').innerText = `${pruned}`;
+        const rBadge = document.getElementById('retention-badge');
+        rBadge.innerText = retentionStatus.compliance_status || 'COMPLIANT';
+        rBadge.className = 'px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/30';
+        document.getElementById('stat-retention-sub').innerText = pruned === 0 ? '0 pruned (All within policy)' : `${pruned} pruned on last run`;
+      } else {
+        document.getElementById('stat-retention-pruned').innerText = '0';
+        document.getElementById('stat-retention-sub').innerText = 'Awaiting retention cycle';
+      }
+    }
+
+    function renderGoldAndRetentionAudits(goldStatus, retentionStatus) {
+      if (goldStatus && goldStatus.metrics) {
+        const m = goldStatus.metrics;
+        document.getElementById('gold-last-verified').innerText = `Verified: ${(goldStatus.verified_at_utc || '').replace('T', ' ').slice(0, 19)} UTC`;
+        document.getElementById('gold-reconcile-status').innerText = goldStatus.reconciliation_passed
+          ? `Passed (Δ ${m.energy_reconciliation_delta_kwh} kWh)`
+          : `Failed (Δ ${m.energy_reconciliation_delta_kwh} kWh)`;
+        document.getElementById('gold-days-status').innerText = `${m.gold_daily_days} days (${m.complete_days_count} complete)`;
+        document.getElementById('gold-recent-records').innerText = `${m.gold_recent_records} intervals`;
+      }
+
+      const tbody = document.getElementById('retention-table-body');
+      if (!tbody) return;
+
+      if (retentionStatus && Array.isArray(retentionStatus.table_audits) && retentionStatus.table_audits.length > 0) {
+        document.getElementById('retention-last-run').innerText = `Executed: ${(retentionStatus.executed_at_utc || '').replace('T', ' ').slice(0, 19)} UTC`;
+        tbody.innerHTML = '';
+
+        retentionStatus.table_audits.forEach(audit => {
+          const tr = document.createElement('tr');
+          tr.className = 'hover:bg-slate-800/40 transition';
+
+          const isOk = audit.status === 'COMPLIANT' || audit.status === 'PRUNED';
+          const badgeClass = isOk
+            ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+            : 'bg-amber-500/10 text-amber-400 border-amber-500/30';
+
+          const oldestStr = audit.oldest_record_after || audit.oldest_record_before || '--';
+
+          tr.innerHTML = `
+            <td class="py-2.5 px-3 text-white font-medium">${audit.table_id}</td>
+            <td class="py-2.5 px-3 text-slate-400">${audit.layer || '--'} / ${audit.grain || '--'}</td>
+            <td class="py-2.5 px-3 text-cyan-300">${audit.strategy || '--'} ${audit.retention_value ? `(${audit.retention_value})` : ''}</td>
+            <td class="py-2.5 px-3 text-right text-slate-300">${audit.original_count ?? '--'}</td>
+            <td class="py-2.5 px-3 text-right text-amber-300 font-bold">${audit.pruned_count ?? 0}</td>
+            <td class="py-2.5 px-3 text-right text-emerald-300 font-semibold">${audit.retained_count ?? '--'}</td>
+            <td class="py-2.5 px-3 text-slate-400 font-mono text-[11px]">${oldestStr.slice(0, 19)}</td>
+            <td class="py-2.5 px-3 text-center">
+              <span class="px-2 py-0.5 rounded text-[10px] border ${badgeClass}">
+                ${audit.status || 'OK'}
+              </span>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } else {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="8" class="text-center py-6 text-slate-400 font-sans">
+              <span class="text-emerald-400 font-semibold">✨ All datasets are compliant.</span>
+              <span class="text-slate-500 block text-xs mt-1">
+                No records currently require pruning. Run <code>python retention_manager.py</code> to execute a lifecycle evaluation cycle.
+              </span>
+            </td>
+          </tr>
+        `;
+      }
+    }
+
+    function renderDataCatalog(catalogData, rulesData) {
+      const tbody = document.getElementById('catalog-table-body');
+      if (!tbody) return;
+
+      const tables = (catalogData && catalogData.tables) || [];
+      const rules = (rulesData && rulesData.rules) || [];
+
+      // Create lookup map of rules by key: "layer_grain"
+      const ruleMap = {};
+      rules.forEach(r => {
+        const key = `${(r.layer || '').toLowerCase()}_${(r.grain || '').toLowerCase()}`;
+        ruleMap[key] = r;
+      });
+
+      if (tables.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" class="text-center py-6 text-slate-500 font-sans">
+              No catalog entries found. Awaiting registration in <code>config/data_catalog.json</code>.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = '';
+      tables.forEach(tbl => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-800/40 transition font-mono';
+        const ruleKey = `${(tbl.layer || '').toLowerCase()}_${(tbl.grain || '').toLowerCase()}`;
+        const rule = ruleMap[ruleKey];
+        const retentionDesc = rule ? `${rule.strategy} (${rule.retention_value ?? 'unbounded'})` : 'Default';
+
+        tr.innerHTML = `
+          <td class="py-2.5 px-3 text-cyan-300 font-bold">${tbl.table_id || tbl.display_name}</td>
+          <td class="py-2.5 px-3 text-amber-400 font-semibold uppercase text-[11px]">${tbl.layer || '--'}</td>
+          <td class="py-2.5 px-3 text-slate-300">${tbl.grain || '--'}</td>
+          <td class="py-2.5 px-3 text-slate-400 text-[11px]">${tbl.file_path || '--'}</td>
+          <td class="py-2.5 px-3 text-emerald-400">${retentionDesc}</td>
+          <td class="py-2.5 px-3 font-sans text-slate-300 text-xs">${tbl.description || '--'}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderAdrs(adrsData) {
+      const container = document.getElementById('adrs-container');
+      if (!container) return;
+
+      const records = (adrsData && adrsData.records) || [];
+      if (records.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-6 text-slate-500 font-sans text-xs">
+            No ADRs found. Awaiting registration in <code>config/adrs.json</code>.
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = '';
+      records.forEach((adr, index) => {
+        const adrId = `adr-${index + 1}`;
+        const item = document.createElement('div');
+        item.className = 'border border-slate-800 rounded-xl bg-slate-950/60 overflow-hidden';
+        item.innerHTML = `
+          <button onclick="toggleAdr('${adrId}')" class="w-full text-left px-4 py-3 flex justify-between items-center hover:bg-slate-800/40 transition">
+            <div class="flex items-center gap-2">
+              <span class="font-semibold text-xs sm:text-sm text-cyan-300 font-mono">${adr.id}:</span>
+              <span class="font-semibold text-xs sm:text-sm text-slate-200">${adr.title}</span>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+              <span class="text-[10px] text-slate-500 font-mono hidden sm:inline">${adr.date || ''}</span>
+              <span class="text-xs text-emerald-400 font-mono bg-emerald-950 px-2 py-0.5 rounded border border-emerald-800">${adr.status || 'Accepted'}</span>
+            </div>
+          </button>
+          <div id="${adrId}" class="hidden px-4 pb-4 pt-2 text-xs text-slate-300 leading-relaxed border-t border-slate-800/60 space-y-2.5">
+            <div>
+              <strong class="text-slate-400 block uppercase text-[10px] tracking-wider mb-0.5">Context</strong>
+              <p class="text-slate-300">${adr.context}</p>
+            </div>
+            <div>
+              <strong class="text-slate-400 block uppercase text-[10px] tracking-wider mb-0.5">Decision</strong>
+              <p class="text-slate-300 font-mono text-[11px] bg-slate-900/60 p-2 rounded border border-slate-800/80">${adr.decision}</p>
+            </div>
+            <div>
+              <strong class="text-slate-400 block uppercase text-[10px] tracking-wider mb-0.5">Consequences</strong>
+              <p class="text-slate-400">${adr.consequences}</p>
+            </div>
+          </div>
+        `;
+        container.appendChild(item);
+      });
+    }
+
+    function renderRunHistory(history) {
+      const tbody = document.getElementById('runs-table-body');
+      if (!tbody) return;
+
+      if (!history || !Array.isArray(history) || history.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="8" class="text-center py-8 text-slate-500 font-sans">
+              <p class="text-sm text-slate-400">No operational runs logged yet</p>
+              <p class="text-xs text-slate-500 mt-1">Run <code>python pipeline_sync.py</code> locally or via GitHub Actions to log execution runs.</p>
+            </td>
+          </tr>
+        `;
+        renderChart([]);
+        return;
+      }
+
+      tbody.innerHTML = '';
+      history.slice(0, 15).forEach(run => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-800/40 transition';
+
+        const isOk = run.contract_passed !== false;
+        const statusBadge = isOk
+          ? '<span class="px-2 py-0.5 rounded text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">PASS</span>'
+          : '<span class="px-2 py-0.5 rounded text-[10px] bg-rose-500/10 text-rose-400 border border-rose-500/30">FAIL</span>';
+
+        const m = run.metrics || {};
+        const runTs = (run.run_timestamp_utc || '').replace('T', ' ').slice(0, 19);
+
+        tr.innerHTML = `
+          <td class="py-2 px-3 text-slate-200 font-medium">${runTs}</td>
+          <td class="py-2 px-3">${statusBadge}</td>
+          <td class="py-2 px-3 text-right text-slate-300">${(run.execution_duration_seconds || 0).toFixed(1)}s</td>
+          <td class="py-2 px-3 text-right text-slate-400">${m.total_records_evaluated || '--'}</td>
+          <td class="py-2 px-3 text-right text-cyan-400 font-semibold">${m.new_records_count != null ? m.new_records_count : '--'}</td>
+          <td class="py-2 px-3 text-center ${m.schema_violations_count ? 'text-rose-400 font-bold' : 'text-slate-500'}">${m.schema_violations_count || 0}</td>
+          <td class="py-2 px-3 text-center ${m.boundary_violations_count ? 'text-rose-400 font-bold' : 'text-slate-500'}">${m.boundary_violations_count || 0}</td>
+          <td class="py-2 px-3 text-center ${m.monotonicity_violations_count ? 'text-amber-400 font-bold' : 'text-slate-500'}">${m.monotonicity_violations_count || 0}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      renderChart(history);
+    }
+
+    function renderChart(history) {
+      const chartDom = document.getElementById('chart-execution');
+      if (!chartDom) return;
+
+      if (!history || !Array.isArray(history) || history.length === 0) {
+        chartDom.removeAttribute('_echarts_instance_');
+        chartDom.innerHTML = `
+          <div class="h-full flex flex-col items-center justify-center text-slate-500 space-y-2 p-6 border border-dashed border-slate-800/80 rounded-xl">
+            <span class="text-2xl">📊</span>
+            <p class="text-xs sm:text-sm font-medium text-slate-400">No Execution History Available Yet</p>
+            <p class="text-[11px] text-slate-500 max-w-sm text-center">
+              Execute <code>python pipeline_sync.py</code> to log pipeline execution duration and record ingestion metrics.
+            </p>
+          </div>
+        `;
+        return;
+      }
+
+      chartDom.innerHTML = '';
+      if (execChartInstance) {
+        execChartInstance.dispose();
+      }
+      execChartInstance = echarts.init(chartDom);
+      const reversed = [...history].reverse();
+
+      const timestamps = reversed.map(h => (h.run_timestamp_utc || '').slice(11, 16));
+      const durations = reversed.map(h => h.execution_duration_seconds || 0);
+      const appended = reversed.map(h => (h.metrics && h.metrics.new_records_count) || 0);
+
+      execChartInstance.setOption({
+        tooltip: {
+          trigger: 'axis',
+          backgroundColor: '#090d16',
+          borderColor: '#1e293b',
+          textStyle: { color: '#f8fafc', fontSize: 11 }
+        },
+        legend: {
+          data: ['Execution Duration (s)', 'New Records Appended'],
+          textStyle: { color: '#94a3b8', fontSize: 11 },
+          top: 0
+        },
+        grid: { left: '2%', right: '2%', bottom: '5%', top: '18%', containLabel: true },
+        xAxis: {
+          type: 'category',
+          data: timestamps,
+          axisLine: { lineStyle: { color: '#1e293b' } },
+          axisLabel: { color: '#64748b', fontSize: 10 }
+        },
+        yAxis: [
+          {
+            type: 'value',
+            name: 'Seconds',
+            min: 0,
+            nameTextStyle: { color: '#64748b' },
+            splitLine: { lineStyle: { color: '#131b2e' } },
+            axisLabel: { color: '#64748b', fontSize: 10 }
+          },
+          {
+            type: 'value',
+            name: 'Records',
+            min: 0,
+            splitLine: { show: false },
+            axisLabel: { color: '#64748b', fontSize: 10 }
+          }
+        ],
+        series: [
+          {
+            name: 'Execution Duration (s)',
+            type: 'line',
+            smooth: 0.2,
+            showSymbol: true,
+            symbolSize: 6,
+            data: durations,
+            color: '#38bdf8',
+            lineStyle: { width: 2, color: '#38bdf8' }
+          },
+          {
+            name: 'New Records Appended',
+            type: 'bar',
+            yAxisIndex: 1,
+            data: appended,
+            itemStyle: { color: 'rgba(52, 211, 153, 0.45)', borderRadius: [4, 4, 0, 0] }
+          }
+        ]
+      });
+
+      window.addEventListener('resize', () => {
+        if (execChartInstance) execChartInstance.resize();
+      });
+    }
+
+    // Helper: Formats timestamps and cleanly eliminates timezone drift
+    function parseCleanDate(rawString) {
+      if (!rawString) return null;
+      let str = rawString.replace('T', ' ').replace(/(\+\d{2}:\d{2}|Z).*$/, '').trim();
+      const parts = str.match(/(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})/);
+      if (!parts) return new Date(rawString);
+
+      const year = parseInt(parts[1], 10);
+      const month = parseInt(parts[2], 10) - 1;
+      const day = parseInt(parts[3], 10);
+      const hour = parseInt(parts[4], 10);
+      const min = parseInt(parts[5], 10);
+      const sec = parseInt(parts[6], 10);
+
+      const d = new Date(year, month, day, hour, min, sec);
+      const now = new Date();
+      const diffMins = (d.getTime() - now.getTime()) / 60000;
+      if (diffMins > 45 && diffMins < 150) {
+        d.setHours(d.getHours() - Math.round(diffMins / 60));
+      }
+      return d;
+    }
+
+    // Live countdown to top of next hour
+    function updateNextRunCountdown() {
+      const now = new Date();
+      const mins = 59 - now.getMinutes();
+      const secs = 59 - now.getSeconds();
+      
+      const nextHour = (now.getHours() + 1) % 24;
+      const nextHourStr = String(nextHour).padStart(2, '0') + ':00';
+
+      const countdownText = `in ${mins}m ${secs}s (${nextHourStr})`;
+      const badge = document.getElementById('next-run-countdown');
+      if (badge) badge.innerText = `Next run: ${countdownText}`;
+
+      const card = document.getElementById('stat-next-due');
+      if (card) card.innerText = `~${mins}m`;
+
+      const cardSub = document.getElementById('stat-next-due-sub');
+      if (cardSub) cardSub.innerText = `Scheduled at ${nextHourStr}`;
+    }
+
+    // Initialize application
+    document.addEventListener('DOMContentLoaded', () => {
+      updateNextRunCountdown();
+      setInterval(updateNextRunCountdown, 1000);
+      loadOpsData();
+    });
+  </script>
+</body>
+</html>

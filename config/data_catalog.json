@@ -1,0 +1,45 @@
+{
+  "version": "1.0.0",
+  "tables": [
+    {
+      "table_id": "silver_telemetry_master",
+      "display_name": "Silver Master Telemetry",
+      "layer": "silver",
+      "grain": "5_minute",
+      "file_path": "data/silver/telemetry_5min.json",
+      "date_field": "reading_timestamp_utc",
+      "date_format": "iso_utc",
+      "description": "Full-fidelity clean interval telemetry for solar, load, grid, and battery."
+    },
+    {
+      "table_id": "gold_telemetry_recent",
+      "display_name": "Gold Recent Telemetry (30D)",
+      "layer": "gold",
+      "grain": "5_minute",
+      "file_path": "data/gold/telemetry_recent_30d.json",
+      "date_field": "reading_timestamp_utc",
+      "date_format": "iso_utc",
+      "description": "Windowed 5-minute telemetry powering fast dashboard line charts."
+    },
+    {
+      "table_id": "gold_daily_rollups",
+      "display_name": "Gold Daily Rollups Ledger",
+      "layer": "gold",
+      "grain": "daily",
+      "file_path": "data/gold/daily_rollups.json",
+      "date_field": "date",
+      "date_format": "yyyy-mm-dd",
+      "description": "Aggregated daily totals, self-consumption %, and financial ledger."
+    },
+    {
+      "table_id": "ops_run_history",
+      "display_name": "Operational Run History",
+      "layer": "ops",
+      "grain": "per_run",
+      "file_path": "data/ops/run_history.json",
+      "date_field": "run_timestamp_utc",
+      "date_format": "iso_utc",
+      "description": "Rolling audit ledger tracking pipeline health, latency, and contract quality."
+    }
+  ]
+}

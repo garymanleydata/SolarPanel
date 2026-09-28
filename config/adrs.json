@@ -1,0 +1,50 @@
+{
+  "version": "1.0.0",
+  "records": [
+    {
+      "id": "ADR-001",
+      "title": "Zero-Cost Lakehouse via GitHub Actions & Pages",
+      "status": "Accepted",
+      "date": "2026-09-20",
+      "context": "Domestic solar and battery telemetry requires continuous, reliable time-series ingestion and analytical visualization without incurring monthly recurring cloud infrastructure costs (AWS/GCP/Snowflake).",
+      "decision": "Use GitHub Actions for serverless compute and scheduled execution, versioned flat JSON files in the git repository for medallion lakehouse storage, and GitHub Pages for global zero-cost dashboard delivery.",
+      "consequences": "Zero ongoing financial cost and reproducible git data lineage. Git repository size grows with high-frequency telemetry, requiring retention pruning."
+    },
+    {
+      "id": "ADR-002",
+      "title": "Invariant Verification Gate & Pre-Commit Circuit Breaker",
+      "status": "Accepted",
+      "date": "2026-09-24",
+      "context": "Upstream inverter cloud APIs are prone to transient counter rollbacks, dropped telemetry variables, and negative register jitter that can corrupt cumulative analytics.",
+      "decision": "Implement a pre-commit quality gate (data_quality.py) enforcing schema conformity, physical domain boundaries, and register monotonicity prior to writing to persistent storage, halting corrupted writes automatically via a circuit breaker.",
+      "consequences": "Guarantees reliable data contracts across all downstream tiers. Prevents corrupted data from entering the lakehouse; requires monitoring to alert on halted syncs."
+    },
+    {
+      "id": "ADR-003",
+      "title": "External Webhook Scheduling via cron-job.org",
+      "status": "Accepted",
+      "date": "2026-09-25",
+      "context": "GitHub Actions' internal cron schedule queue experiences unpredictable delays (15 to 45 minutes) during high platform load, leading to irregular telemetry intervals.",
+      "decision": "Replace internal GitHub schedule triggers with an external scheduler (cron-job.org) invoking GitHub's workflow_dispatch REST API at an exact minute schedule (:00 of each hour).",
+      "consequences": "Deterministic on-the-minute pipeline execution, bypassing congested shared runner queues. Introduces an external service dependency."
+    },
+    {
+      "id": "ADR-004",
+      "title": "Medallion Architecture & Dual-Table Gold Analytical Tier",
+      "status": "Accepted",
+      "date": "2026-09-28",
+      "context": "Loading multi-year 5-minute interval datasets (>100,000 rows) directly in client web browsers degrades dashboard rendering speed and burns mobile network bandwidth.",
+      "decision": "Decouple Master Silver telemetry from presentation by compiling two distinct Gold tier analytical tables: Table 1 (telemetry_recent_30d.json) for lightweight 5-minute dashboard rendering, and Table 2 (daily_rollups.json) for 5-year aggregated financial and energy ledger analysis.",
+      "consequences": "Ultra-fast dashboard load times under 150ms. Requires an additional aggregation step in the build pipeline (gold_transform.py) and reconciliation checks between Silver and Gold."
+    },
+    {
+      "id": "ADR-005",
+      "title": "Declarative Data Retention & Decoupled Script Execution",
+      "status": "Accepted",
+      "date": "2026-09-28",
+      "context": "Hardcoding dataset retention windows directly inside ingestion scripts bloats pipeline code and obscures lifecycle governance contracts.",
+      "decision": "Isolate lifecycle management into a dedicated retention engine (retention_manager.py) driven declaratively by config/data_catalog.json and config/retention_rules.json, executing as a distinct final step in the pipeline.",
+      "consequences": "Single-responsibility scripts (Ingestion -> Gold Transform -> Retention). Retention policies can be updated or audited without touching executable application code."
+    }
+  ]
+}

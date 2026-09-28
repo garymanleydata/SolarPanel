@@ -1,0 +1,33 @@
+{
+  "version": "1.0.0",
+  "rules": [
+    {
+      "layer": "gold",
+      "grain": "5_minute",
+      "strategy": "rolling_days",
+      "retention_value": 30,
+      "description": "Retain 30 trailing days of high-frequency data for dashboard rendering."
+    },
+    {
+      "layer": "gold",
+      "grain": "daily",
+      "strategy": "rolling_years",
+      "retention_value": 5,
+      "description": "Retain 5 years of daily summaries for multi-year financial trends."
+    },
+    {
+      "layer": "silver",
+      "grain": "5_minute",
+      "strategy": "full_history",
+      "retention_value": null,
+      "description": "Master audit layer; all historical records preserved indefinitely."
+    },
+    {
+      "layer": "ops",
+      "grain": "per_run",
+      "strategy": "max_records",
+      "retention_value": 100,
+      "description": "Keep last x pipeline runs in rolling operational audit log."
+    }
+  ]
+}

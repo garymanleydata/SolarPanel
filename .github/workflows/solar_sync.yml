@@ -25,23 +25,31 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Execute Ingestion Pipeline & Quality Gate
+      - name: 1. Execute Ingestion Pipeline & Quality Gate (Silver Tier)
         env:
           FOX_API_KEY: ${{ secrets.FOX_API_KEY }}
           FOX_DEVICE_SN: ${{ secrets.FOX_DEVICE_SN }}
         run: |
           python pipeline_sync.py
 
-      - name: Commit and push updated telemetry & operational logs
+      - name: 2. Execute Gold Analytical Transformations & Reconciliation
+        run: |
+          python gold_transform.py
+
+      - name: 3. Enforce Declarative Data Retention & Lifecycle Policies
+        run: |
+          python retention_manager.py
+
+      - name: Commit and push updated data tiers & operational audit logs
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add data/silver/telemetry_5min.json data/ops/run_status.json data/ops/run_history.json
+          git add data/silver/ data/gold/ data/ops/
 
           if git diff --staged --quiet; then
-            echo "No telemetry or quality log changes detected."
+            echo "No changes detected across Silver, Gold, or Ops layers."
           else
-            git commit -m "chore(telemetry): append continuous 5-minute data & update quality logs"
+            git commit -m "chore(lakehouse): sync silver intervals, build gold tables & apply retention"
             git push
           fi
 

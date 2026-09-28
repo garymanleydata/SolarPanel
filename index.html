@@ -48,6 +48,9 @@
         </p>
       </div>
       <div class="flex items-center gap-2 sm:gap-3 w-full sm:w-auto justify-between sm:justify-end">
+        <a href="ops.html" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-cyan-950/80 hover:bg-cyan-900 text-cyan-300 border border-cyan-800 transition flex items-center gap-1.5 shadow-sm">
+          <span>🛡️</span> Data Trust Centre
+        </a>
         <button id="btn-reset-zoom" onclick="resetZoom()" class="hidden px-2.5 py-1 rounded-lg text-xs font-semibold bg-amber-500/10 text-amber-300 border border-amber-500/30 hover:bg-amber-500/20 transition">
           Reset Filter
         </button>
@@ -58,7 +61,7 @@
       </div>
     </header>
 
-    <!-- 1. HOUSEHOLD OPERATOR INSIGHT HERO CARD -->
+    <!-- 1. HOUSEHOLD OPERATOR INSIGHT HERO CARD (Current Status) -->
     <section class="bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950 border border-slate-800 rounded-2xl p-4 sm:p-6 shadow-md">
       <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-5">
         <div class="space-y-1.5 flex-1">
@@ -70,7 +73,7 @@
             Evaluating generation and storage...
           </h2>
           <p class="text-xs sm:text-sm text-slate-400 max-w-2xl leading-relaxed" id="household-action-desc">
-            Reading latest 5-minute inverter telemetry.
+            Reading latest inverter telemetry from Gold tier.
           </p>
         </div>
 
@@ -125,10 +128,10 @@
       </div>
     </section>
 
-    <!-- 3. FINANCIAL SUMMARY -->
+    <!-- 3. RUNNING FINANCIAL POSITION (Powered by Gold Daily Rollups) -->
     <section class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
       <div class="bg-slate-900/50 border border-slate-800/80 rounded-xl p-3.5 sm:p-4">
-        <span class="text-[11px] text-slate-400 block font-medium">Window Solar Yield</span>
+        <span class="text-[11px] text-slate-400 block font-medium">Total Solar Yield</span>
         <p class="text-lg sm:text-xl font-bold text-amber-300 mt-0.5" id="kpi-gen-kwh">0.0 kWh</p>
         <span class="text-[11px] text-slate-500 block truncate" id="kpi-gen-savings">Direct Savings: £0.00</span>
       </div>
@@ -146,18 +149,18 @@
       </div>
 
       <div class="bg-slate-900/50 border border-slate-800/80 rounded-xl p-3.5 sm:p-4">
-        <span class="text-[11px] text-slate-400 block font-medium">Net Position</span>
+        <span class="text-[11px] text-slate-400 block font-medium">Net Financial Position</span>
         <p class="text-lg sm:text-xl font-bold text-white mt-0.5" id="kpi-net-cost">£0.00</p>
         <span class="text-[11px] text-slate-500 block" id="kpi-net-desc">Net Balance</span>
       </div>
     </section>
 
-    <!-- 4. MAIN POWER DYNAMICS CHART -->
+    <!-- 4. MAIN POWER DYNAMICS CHART (Gold 30D Window) -->
     <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-3.5 sm:p-5 shadow-sm">
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-3 gap-2">
         <div>
           <h2 class="text-base sm:text-lg font-semibold text-white">Power Dynamics (kW)</h2>
-          <p class="text-xs text-slate-400">5-minute interval solar generation, consumption, and storage flows</p>
+          <p class="text-xs text-slate-400">High-resolution 5-minute solar, consumption, and storage flows</p>
         </div>
       </div>
       <div id="chart-power" class="w-full h-72 sm:h-80 md:h-96"></div>
@@ -178,7 +181,7 @@
       </div>
     </div>
 
-    <!-- 6. INTERACTIVE DAILY TOTALS LEDGER -->
+    <!-- 6. INTERACTIVE DAILY TOTALS LEDGER (Pre-Calculated Gold Table) -->
     <section class="bg-slate-900/90 border border-slate-800 rounded-2xl p-3.5 sm:p-6 shadow-sm space-y-4">
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <div>
@@ -186,7 +189,7 @@
             <span>📅</span> Daily Energy & Financial Ledger
           </h2>
           <p class="text-xs text-slate-400 mt-0.5">
-            Select a row to zoom the timeline to that day. Click any column header to sort.
+            Select a row to zoom the timeline. Click any column header to sort.
           </p>
         </div>
         <div class="flex items-center gap-2.5 w-full sm:w-auto">
@@ -213,35 +216,35 @@
               <th onclick="sortTable('date')" class="py-3 px-3 cursor-pointer hover:text-white transition">
                 Date <span id="sort-date">↕</span>
               </th>
-              <th onclick="sortTable('gen')" class="py-3 px-3 cursor-pointer hover:text-white transition text-right text-amber-400">
-                Solar Yield <span id="sort-gen">↕</span>
+              <th onclick="sortTable('generation_kwh')" class="py-3 px-3 cursor-pointer hover:text-white transition text-right text-amber-400">
+                Solar Yield <span id="sort-generation_kwh">↕</span>
               </th>
-              <th onclick="sortTable('load')" class="py-3 px-3 cursor-pointer hover:text-white transition text-right text-rose-400">
-                Home Load <span id="sort-load">↕</span>
+              <th onclick="sortTable('load_kwh')" class="py-3 px-3 cursor-pointer hover:text-white transition text-right text-rose-400">
+                Home Load <span id="sort-load_kwh">↕</span>
               </th>
-              <th onclick="sortTable('imp')" class="py-3 px-3 cursor-pointer hover:text-white transition text-right text-sky-400">
-                Grid Import <span id="sort-imp">↕</span>
+              <th onclick="sortTable('grid_import_kwh')" class="py-3 px-3 cursor-pointer hover:text-white transition text-right text-sky-400">
+                Grid Import <span id="sort-grid_import_kwh">↕</span>
               </th>
-              <th onclick="sortTable('exp')" class="py-3 px-3 cursor-pointer hover:text-white transition text-right text-emerald-400">
-                Grid Export <span id="sort-exp">↕</span>
+              <th onclick="sortTable('grid_export_kwh')" class="py-3 px-3 cursor-pointer hover:text-white transition text-right text-emerald-400">
+                Grid Export <span id="sort-grid_export_kwh">↕</span>
               </th>
-              <th onclick="sortTable('autonomy')" class="py-3 px-3 cursor-pointer hover:text-white transition text-center">
-                Independence <span id="sort-autonomy">↕</span>
+              <th onclick="sortTable('autonomy_pct')" class="py-3 px-3 cursor-pointer hover:text-white transition text-center">
+                Independence <span id="sort-autonomy_pct">↕</span>
               </th>
-              <th onclick="sortTable('energyCost')" class="py-3 px-3 cursor-pointer hover:text-white transition text-right text-slate-300">
-                Energy Cost <span id="sort-energyCost">↕</span>
+              <th onclick="sortTable('energy_cost_gbp')" class="py-3 px-3 cursor-pointer hover:text-white transition text-right text-slate-300">
+                Energy Cost <span id="sort-energy_cost_gbp">↕</span>
               </th>
-              <th onclick="sortTable('standingCharge')" class="py-3 px-3 cursor-pointer hover:text-white transition text-right text-slate-400">
-                Standing Chg <span id="sort-standingCharge">↕</span>
+              <th onclick="sortTable('standing_charge_gbp')" class="py-3 px-3 cursor-pointer hover:text-white transition text-right text-slate-400">
+                Standing Chg <span id="sort-standing_charge_gbp">↕</span>
               </th>
-              <th onclick="sortTable('totalImportCost')" class="py-3 px-3 cursor-pointer hover:text-white transition text-right text-rose-300">
-                Total Bill <span id="sort-totalImportCost">↕</span>
+              <th onclick="sortTable('total_import_cost_gbp')" class="py-3 px-3 cursor-pointer hover:text-white transition text-right text-rose-300">
+                Total Bill <span id="sort-total_import_cost_gbp">↕</span>
               </th>
-              <th onclick="sortTable('rev')" class="py-3 px-3 cursor-pointer hover:text-white transition text-right text-emerald-300">
-                Export Rev <span id="sort-rev">↕</span>
+              <th onclick="sortTable('export_revenue_gbp')" class="py-3 px-3 cursor-pointer hover:text-white transition text-right text-emerald-300">
+                Export Rev <span id="sort-export_revenue_gbp">↕</span>
               </th>
-              <th onclick="sortTable('net')" class="py-3 px-3 cursor-pointer hover:text-white transition text-right">
-                Net Position <span id="sort-net">↕</span>
+              <th onclick="sortTable('net_balance_gbp')" class="py-3 px-3 cursor-pointer hover:text-white transition text-right">
+                Net Position <span id="sort-net_balance_gbp">↕</span>
               </th>
               <th class="py-3 px-3 text-center">View</th>
             </tr>
@@ -252,38 +255,52 @@
       </div>
       <div class="text-[11px] text-slate-500 flex flex-col sm:flex-row justify-between gap-1 pt-1">
         <span id="table-row-count">Showing 0 days</span>
-        <span>Standing charge fixed at 52.0p/day • Unit rates modelled on Octopus Go</span>
+        <span>Standing charge: 52.0p/day • Gold Medallion pre-computed ledger</span>
       </div>
     </section>
 
     <!-- Footer -->
-    <footer class="text-center text-xs text-slate-600 py-6 border-t border-slate-900">
-      Fox ESS Solar Telemetry Platform • Automated via GitHub Actions
+    <footer class="text-center text-xs text-slate-600 py-6 border-t border-slate-900 flex flex-col sm:flex-row justify-between items-center gap-2">
+      <span>Solar &amp; Battery Home Monitoring Platform</span>
+      <div class="flex items-center gap-4">
+        <a href="ops.html" class="text-cyan-400 hover:text-cyan-300 transition">🛡️ Operations &amp; Data Trust Centre</a>
+        <span>•</span>
+        <span>Automated via GitHub Actions</span>
+      </div>
     </footer>
   </div>
 
   <script>
-    // Append timestamp query parameter to bypass browser and CDN cache
-    const DATA_URL = `data/silver/telemetry_5min.json?_t=${Date.now()}`;
-    const DAILY_STANDING_CHARGE_GBP = 0.52;
+    // Primary Gold URLs (with graceful Silver fallback if Gold has not run yet)
+    const GOLD_RECENT_URL = `data/gold/telemetry_recent_30d.json?_t=${Date.now()}`;
+    const GOLD_DAILY_URL = `data/gold/daily_rollups.json?_t=${Date.now()}`;
+    const SILVER_BACKUP_URL = `data/silver/telemetry_5min.json?_t=${Date.now()}`;
 
-    let rawDataset = [];
-    let aggregatedDays = [];
-    let filteredDays = [];
+    let recentTelemetry = [];
+    let dailyRollups = [];
+    let filteredDailyRollups = [];
     let powerChartInstance = null;
     let currentSortCol = 'date';
     let currentSortAsc = false;
 
-    // Helper: Formats timestamps directly without timezone double-conversion
+    async function safeFetchJson(url) {
+      try {
+        const res = await fetch(url, { cache: 'no-store' });
+        if (!res.ok) return null;
+        const text = await res.text();
+        const trimmed = text.trim();
+        if (!trimmed || trimmed.startsWith('<')) return null;
+        return JSON.parse(trimmed);
+      } catch (err) {
+        console.warn(`Fetch bypassed for ${url}:`, err);
+        return null;
+      }
+    }
+
     function cleanTimestamp(rawString) {
       if (!rawString) return 'Pending sync';
-      
-      // Extract standard YYYY-MM-DD HH:mm:ss format
-      let str = rawString.replace('T', ' ');
-      // Strip any timezone suffix like +01:00 or Z
-      str = str.replace(/(\+\d{2}:\d{2}|Z).*$/, '').trim();
+      let str = rawString.replace('T', ' ').replace(/(\+\d{2}:\d{2}|Z).*$/, '').trim();
 
-      // Check if the timestamp was accidentally shifted into the future
       try {
         const parts = str.match(/(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})/);
         if (parts) {
@@ -295,91 +312,45 @@
           const sec = parseInt(parts[6], 10);
 
           const recordDate = new Date(year, month, day, hour, min, sec);
-          const nowDate = new Date();
-
-          // If the record claims to be more than 15 minutes in the future, correct the 1 or 2 hour offset artifact
-          const diffMinutes = (recordDate.getTime() - nowDate.getTime()) / 60000;
-          if (diffMinutes > 45 && diffMinutes < 150) {
-            const correctedHours = Math.round(diffMinutes / 60);
-            recordDate.setHours(recordDate.getHours() - correctedHours);
-            const pad = (n) => String(n).padStart(2, '0');
-            return `${pad(recordDate.getDate())}/${pad(recordDate.getMonth() + 1)}/${recordDate.getFullYear()} ${pad(recordDate.getHours())}:${pad(recordDate.getMinutes())}:${pad(recordDate.getSeconds())}`;
-          }
-
           const pad = (n) => String(n).padStart(2, '0');
           return `${pad(day)}/${pad(month + 1)}/${year} ${pad(hour)}:${pad(min)}:${pad(sec)}`;
         }
       } catch (e) {
-        console.warn('Timestamp parsing fallback:', e);
+        console.warn('Timestamp parse error:', e);
       }
       return str;
     }
 
     async function loadDashboard() {
       try {
-        const response = await fetch(DATA_URL, { cache: 'no-store' });
-        if (!response.ok) throw new Error(`HTTP ${response.status} loading telemetry data`);
-        rawDataset = await response.json();
+        let [goldRecentData, goldDailyData] = await Promise.all([
+          safeFetchJson(GOLD_RECENT_URL),
+          safeFetchJson(GOLD_DAILY_URL)
+        ]);
 
-        if (!rawDataset || rawDataset.length === 0) {
-          document.getElementById('latest-timestamp').innerText = 'No records found';
-          return;
+        // Fallback to Silver if Gold has not been generated yet
+        if (!goldRecentData || goldRecentData.length === 0) {
+          console.info('Gold 30d table not found, loading Silver backup...');
+          goldRecentData = await safeFetchJson(SILVER_BACKUP_URL);
         }
 
-        buildDailyAggregates(rawDataset);
-        renderLatestCards(rawDataset);
-        renderHouseholdHero(rawDataset);
-        renderCharts(rawDataset);
-        renderTable();
+        if (goldRecentData && goldRecentData.length > 0) {
+          recentTelemetry = goldRecentData;
+          renderLatestCards(recentTelemetry);
+          renderHouseholdHero(recentTelemetry);
+          renderHighResCharts(recentTelemetry);
+        }
+
+        if (goldDailyData && goldDailyData.length > 0) {
+          dailyRollups = goldDailyData;
+          filteredDailyRollups = [...dailyRollups];
+          renderDailyKpiTotals(dailyRollups);
+          renderDailyTotalsChart(dailyRollups);
+          renderLedgerTable();
+        }
       } catch (err) {
-        console.error('Failed to load telemetry:', err);
-        document.getElementById('latest-timestamp').innerText = 'Failed to load telemetry';
-        document.getElementById('latest-timestamp').parentElement.classList.replace('text-slate-300', 'text-rose-400');
+        console.error('Failed to initialise dashboard:', err);
       }
-    }
-
-    function buildDailyAggregates(dataset) {
-      const map = {};
-      dataset.forEach(row => {
-        const day = row.reading_timestamp_local.slice(0, 10);
-        if (!map[day]) {
-          map[day] = {
-            date: day,
-            gen: 0,
-            load: 0,
-            imp: 0,
-            exp: 0,
-            energyCost: 0,
-            rev: 0,
-            savings: 0
-          };
-        }
-        map[day].gen += (row.delta_generation_kwh || 0);
-        map[day].load += (row.delta_load_kwh || 0);
-        map[day].imp += (row.delta_grid_import_kwh || 0);
-        map[day].exp += (row.delta_grid_export_kwh || 0);
-        map[day].energyCost += (row.cost_import_gbp || 0);
-        map[day].rev += (row.revenue_export_gbp || 0);
-        map[day].savings += (row.savings_solar_gbp || 0);
-      });
-
-      aggregatedDays = Object.values(map).map(d => {
-        const standingCharge = DAILY_STANDING_CHARGE_GBP;
-        const totalImportCost = d.energyCost + standingCharge;
-        const net = totalImportCost - d.rev;
-        const autonomy = d.load > 0 ? Math.min(100, Math.max(0, ((d.load - d.imp) / d.load) * 100)) : 100;
-
-        return {
-          ...d,
-          standingCharge: standingCharge,
-          totalImportCost: totalImportCost,
-          net: net,
-          autonomy: autonomy
-        };
-      });
-
-      aggregatedDays.sort((a, b) => b.date.localeCompare(a.date));
-      filteredDays = [...aggregatedDays];
     }
 
     function renderHouseholdHero(dataset) {
@@ -388,7 +359,6 @@
       const load = latest.loads_power_kw || 0.0;
       const soc = latest.battery_soc_pct || 0;
       const imp = latest.grid_consumption_kw || 0.0;
-
       const surplus = pv - load;
 
       const leadEl = document.getElementById('household-action-lead');
@@ -403,7 +373,7 @@
         dotEl.className = 'w-1.5 h-1.5 rounded-full bg-emerald-400';
         statusTitleEl.innerText = 'High Solar Surplus';
         leadEl.innerText = `Generating ${surplus.toFixed(1)} kW surplus solar power`;
-        descEl.innerText = `Solar output (${pv.toFixed(1)} kW) easily covers your current home demand (${load.toFixed(1)} kW). Great time to run the dishwasher, washing machine, or tumble dryer for free.`;
+        descEl.innerText = `Solar output (${pv.toFixed(1)} kW) comfortably covers current home demand (${load.toFixed(1)} kW). Great time to run heavy appliances for free.`;
         badgeAppEl.innerText = 'Recommended';
         badgeAppEl.className = 'text-sm font-bold text-emerald-300 mt-0.5 block';
       } else if (surplus > 0.2) {
@@ -424,16 +394,12 @@
         dotEl.className = 'w-1.5 h-1.5 rounded-full bg-amber-400';
         statusTitleEl.innerText = 'Drawing Grid Power';
         leadEl.innerText = `Drawing ${imp.toFixed(2)} kW from the grid`;
-        descEl.innerText = `Household consumption exceeds current solar yield and battery discharge. Defer running heavy appliances until overnight off-peak or tomorrow's solar.`;
+        descEl.innerText = `Household consumption exceeds current solar yield and battery discharge. Defer running heavy appliances until overnight off-peak.`;
         badgeAppEl.innerText = 'Defer If Possible';
         badgeAppEl.className = 'text-sm font-bold text-amber-300 mt-0.5 block';
       }
 
-      if (imp <= 0.05) {
-        badgeGridEl.innerText = 'Zero Grid Draw';
-      } else {
-        badgeGridEl.innerText = `${imp.toFixed(2)} kW Import`;
-      }
+      badgeGridEl.innerText = imp <= 0.05 ? 'Zero Grid Draw' : `${imp.toFixed(2)} kW Import`;
 
       const estimatedKwhRemaining = (soc / 100.0) * 10.0;
       if (load > 0.15) {
@@ -446,8 +412,6 @@
 
     function renderLatestCards(dataset) {
       const latest = dataset[dataset.length - 1];
-
-      // Update the badge with the clean timestamp
       const formattedTs = cleanTimestamp(latest.reading_timestamp_local || latest.reading_timestamp_utc);
       document.getElementById('latest-timestamp').innerText = `Updated: ${formattedTs}`;
 
@@ -466,38 +430,35 @@
       const netGrid = (latest.grid_consumption_kw || 0) - (latest.grid_feed_in_kw || 0);
       document.getElementById('stat-grid').innerHTML = `${Math.abs(netGrid).toFixed(2)} <span class="text-xs font-normal text-slate-400">kW</span>`;
       document.getElementById('stat-grid-direction').innerText = netGrid >= 0 ? 'Net Grid Import' : 'Exporting to Grid';
-
-      let sumGenKwh = 0, sumImportKwh = 0, sumExportKwh = 0;
-      let sumEnergyCost = 0, sumStandingCharge = 0, sumTotalCost = 0, sumExportRev = 0, sumSolarSavings = 0;
-
-      aggregatedDays.forEach(day => {
-        sumGenKwh += day.gen;
-        sumImportKwh += day.imp;
-        sumExportKwh += day.exp;
-        sumEnergyCost += day.energyCost;
-        sumStandingCharge += day.standingCharge;
-        sumTotalCost += day.totalImportCost;
-        sumExportRev += day.rev;
-        sumSolarSavings += day.savings;
-      });
-
-      document.getElementById('kpi-gen-kwh').innerText = `${sumGenKwh.toFixed(1)} kWh`;
-      document.getElementById('kpi-gen-savings').innerText = `Direct Savings: £${sumSolarSavings.toFixed(2)}`;
-      document.getElementById('kpi-import-cost').innerText = `£${sumTotalCost.toFixed(2)}`;
-      document.getElementById('kpi-import-breakdown').innerText = `Energy: £${sumEnergyCost.toFixed(2)} | SC: £${sumStandingCharge.toFixed(2)}`;
-      document.getElementById('kpi-export-rev').innerText = `£${sumExportRev.toFixed(2)}`;
-      document.getElementById('kpi-export-kwh').innerText = `${sumExportKwh.toFixed(1)} kWh exported @ 15p`;
-
-      const netPosition = sumTotalCost - sumExportRev;
-      document.getElementById('kpi-net-cost').innerText = `£${netPosition.toFixed(2)}`;
-      document.getElementById('kpi-net-desc').innerText = netPosition > 0 ? 'Net Utility Spend' : 'Net Credit Balance';
     }
 
-    function renderCharts(dataset) {
-      const timestamps = dataset.map(d => {
-        const raw = d.reading_timestamp_local || d.reading_timestamp_utc || '';
-        return raw.replace('T', ' ').slice(0, 16);
+    function renderDailyKpiTotals(rollups) {
+      let sumGen = 0, sumImportCost = 0, sumEnergyCost = 0, sumSC = 0, sumExportRev = 0, sumExportKwh = 0, sumSavings = 0;
+
+      rollups.forEach(d => {
+        sumGen += (d.generation_kwh || 0);
+        sumImportCost += (d.total_import_cost_gbp || 0);
+        sumEnergyCost += (d.energy_cost_gbp || 0);
+        sumSC += (d.standing_charge_gbp || 0);
+        sumExportRev += (d.export_revenue_gbp || 0);
+        sumExportKwh += (d.grid_export_kwh || 0);
+        sumSavings += (d.solar_savings_gbp || 0);
       });
+
+      document.getElementById('kpi-gen-kwh').innerText = `${sumGen.toFixed(1)} kWh`;
+      document.getElementById('kpi-gen-savings').innerText = `Direct Savings: £${sumSavings.toFixed(2)}`;
+      document.getElementById('kpi-import-cost').innerText = `£${sumImportCost.toFixed(2)}`;
+      document.getElementById('kpi-import-breakdown').innerText = `Energy: £${sumEnergyCost.toFixed(2)} | SC: £${sumSC.toFixed(2)}`;
+      document.getElementById('kpi-export-rev').innerText = `£${sumExportRev.toFixed(2)}`;
+      document.getElementById('kpi-export-kwh').innerText = `${sumExportKwh.toFixed(1)} kWh exported`;
+
+      const net = sumImportCost - sumExportRev;
+      document.getElementById('kpi-net-cost').innerText = `£${net.toFixed(2)}`;
+      document.getElementById('kpi-net-desc').innerText = net > 0 ? 'Net Utility Spend' : 'Net Credit Balance';
+    }
+
+    function renderHighResCharts(dataset) {
+      const timestamps = dataset.map(d => (d.reading_timestamp_local || d.reading_timestamp_utc || '').slice(0, 16));
       const socData = dataset.map(d => d.battery_soc_pct);
       const batPowerData = dataset.map(d => (d.battery_charge_kw || 0) - (d.battery_discharge_kw || 0));
 
@@ -646,19 +607,25 @@
             yAxisIndex: 1,
             data: batPowerData,
             itemStyle: {
-              color: function(params) {
-                return params.value >= 0 ? '#059669' : '#d97706';
-              }
+              color: (params) => params.value >= 0 ? '#059669' : '#d97706'
             }
           }
         ]
       });
 
-      const dayKeys = [...aggregatedDays].reverse().map(d => d.date);
-      const dailyChart = echarts.init(document.getElementById('chart-daily'));
-      const dayMap = {};
-      aggregatedDays.forEach(d => { dayMap[d.date] = d; });
+      window.addEventListener('resize', () => {
+        if (powerChartInstance) powerChartInstance.resize();
+        if (batChart) batChart.resize();
+      });
+    }
 
+    function renderDailyTotalsChart(rollups) {
+      const reversed = [...rollups].reverse();
+      const dates = reversed.map(d => d.date);
+      const chartDom = document.getElementById('chart-daily');
+      if (!chartDom) return;
+
+      const dailyChart = echarts.init(chartDom);
       dailyChart.setOption({
         tooltip: {
           trigger: 'axis',
@@ -676,7 +643,7 @@
         grid: { left: '2%', right: '2%', bottom: '10%', top: '15%', containLabel: true },
         xAxis: {
           type: 'category',
-          data: dayKeys,
+          data: dates,
           axisLine: { lineStyle: { color: '#1e293b' } },
           axisLabel: { color: '#64748b', fontSize: 10 }
         },
@@ -690,69 +657,67 @@
           {
             name: 'Solar Generation',
             type: 'bar',
-            data: dayKeys.map(k => dayMap[k].gen.toFixed(1)),
+            data: reversed.map(d => d.generation_kwh),
             itemStyle: { color: '#f59e0b' }
           },
           {
             name: 'Grid Import',
             type: 'bar',
-            data: dayKeys.map(k => dayMap[k].imp.toFixed(1)),
+            data: reversed.map(d => d.grid_import_kwh),
             itemStyle: { color: '#38bdf8' }
           },
           {
             name: 'Grid Export',
             type: 'bar',
-            data: dayKeys.map(k => dayMap[k].exp.toFixed(1)),
+            data: reversed.map(d => d.grid_export_kwh),
             itemStyle: { color: '#10b981' }
           }
         ]
       });
 
       window.addEventListener('resize', () => {
-        powerChartInstance.resize();
-        batChart.resize();
         dailyChart.resize();
       });
     }
 
-    function renderTable() {
+    function renderLedgerTable() {
       const tbody = document.getElementById('daily-table-body');
       tbody.innerHTML = '';
 
-      if (filteredDays.length === 0) {
+      if (filteredDailyRollups.length === 0) {
         tbody.innerHTML = `<tr><td colspan="12" class="text-center py-6 text-slate-500 font-sans">No matching dates found</td></tr>`;
         document.getElementById('table-row-count').innerText = 'Showing 0 days';
         return;
       }
 
-      filteredDays.forEach(day => {
+      filteredDailyRollups.forEach(day => {
         const tr = document.createElement('tr');
         tr.className = 'hover:bg-slate-800/40 cursor-pointer transition';
 
         let autonomyBadge = 'bg-rose-500/10 text-rose-300 border-rose-500/30';
-        if (day.autonomy >= 80) autonomyBadge = 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30';
-        else if (day.autonomy >= 50) autonomyBadge = 'bg-amber-500/10 text-amber-300 border-amber-500/30';
+        if (day.autonomy_pct >= 80) autonomyBadge = 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30';
+        else if (day.autonomy_pct >= 50) autonomyBadge = 'bg-amber-500/10 text-amber-300 border-amber-500/30';
 
-        const netClass = day.net <= 0 ? 'text-emerald-400 font-bold' : 'text-slate-300';
-        const netFormatted = day.net <= 0 ? `-£${Math.abs(day.net).toFixed(2)} (Credit)` : `£${day.net.toFixed(2)}`;
+        const netClass = day.net_balance_gbp <= 0 ? 'text-emerald-400 font-bold' : 'text-slate-300';
+        const netFormatted = day.net_balance_gbp <= 0 ? `-£${Math.abs(day.net_balance_gbp).toFixed(2)} (Credit)` : `£${day.net_balance_gbp.toFixed(2)}`;
 
         tr.innerHTML = `
           <td class="py-2.5 px-3 text-white font-medium flex items-center gap-1.5">
             <span>📅</span> ${day.date}
           </td>
-          <td class="py-2.5 px-3 text-right text-amber-400 font-bold">${day.gen.toFixed(1)} kWh</td>
-          <td class="py-2.5 px-3 text-right text-rose-400">${day.load.toFixed(1)} kWh</td>
-          <td class="py-2.5 px-3 text-right text-sky-400">${day.imp.toFixed(1)} kWh</td>
-          <td class="py-2.5 px-3 text-right text-emerald-400">${day.exp.toFixed(1)} kWh</td>
+          <td class="py-2.5 px-3 text-right text-amber-400 font-bold">${day.generation_kwh.toFixed(1)} kWh</td>
+          <td class="py-2.5 px-3 text-right text-rose-400">${day.load_kwh.toFixed(1)} kWh</td>
+          <td class="py-2.5 px-3 text-right text-sky-400">${day.grid_import_kwh.toFixed(1)} kWh</td>
+          <td class="py-2.5 px-3 text-right text-emerald-400">${day.grid_export_kwh.toFixed(1)} kWh</td>
           <td class="py-2.5 px-3 text-center">
             <span class="inline-block px-2 py-0.5 rounded-full text-[11px] border ${autonomyBadge}">
-              ${day.autonomy.toFixed(0)}%
+              ${day.autonomy_pct.toFixed(0)}%
             </span>
           </td>
-          <td class="py-2.5 px-3 text-right text-slate-300">£${day.energyCost.toFixed(2)}</td>
-          <td class="py-2.5 px-3 text-right text-slate-400">£${day.standingCharge.toFixed(2)}</td>
-          <td class="py-2.5 px-3 text-right text-rose-300 font-semibold">£${day.totalImportCost.toFixed(2)}</td>
-          <td class="py-2.5 px-3 text-right text-emerald-300">£${day.rev.toFixed(2)}</td>
+          <td class="py-2.5 px-3 text-right text-slate-300">£${day.energy_cost_gbp.toFixed(2)}</td>
+          <td class="py-2.5 px-3 text-right text-slate-400">£${day.standing_charge_gbp.toFixed(2)}</td>
+          <td class="py-2.5 px-3 text-right text-rose-300 font-semibold">£${day.total_import_cost_gbp.toFixed(2)}</td>
+          <td class="py-2.5 px-3 text-right text-emerald-300">£${day.export_revenue_gbp.toFixed(2)}</td>
           <td class="py-2.5 px-3 text-right ${netClass}">${netFormatted}</td>
           <td class="py-2.5 px-3 text-center">
             <button
@@ -768,7 +733,7 @@
         tbody.appendChild(tr);
       });
 
-      document.getElementById('table-row-count').innerText = `Showing ${filteredDays.length} of ${aggregatedDays.length} days`;
+      document.getElementById('table-row-count').innerText = `Showing ${filteredDailyRollups.length} of ${dailyRollups.length} days`;
     }
 
     function sortTable(col) {
@@ -779,44 +744,44 @@
         currentSortAsc = true;
       }
 
-      const sortCols = ['date', 'gen', 'load', 'imp', 'exp', 'autonomy', 'energyCost', 'standingCharge', 'totalImportCost', 'rev', 'net'];
+      const sortCols = ['date', 'generation_kwh', 'load_kwh', 'grid_import_kwh', 'grid_export_kwh', 'autonomy_pct', 'energy_cost_gbp', 'standing_charge_gbp', 'total_import_cost_gbp', 'export_revenue_gbp', 'net_balance_gbp'];
       sortCols.forEach(c => {
         const span = document.getElementById(`sort-${c}`);
         if (span) span.innerText = (c === currentSortCol) ? (currentSortAsc ? '▲' : '▼') : '↕';
       });
 
-      filteredDays.sort((a, b) => {
+      filteredDailyRollups.sort((a, b) => {
         let vA = a[col];
         let vB = b[col];
         if (typeof vA === 'string') {
-          return currentSortAsc ? vA.localeCompare(vB) : vB.localeCompare(vA);
+          return currentSortAsc ? vA.localeCompare(vB) : vB.localeCompare(a);
         }
         return currentSortAsc ? (vA - vB) : (vB - vA);
       });
 
-      renderTable();
+      renderLedgerTable();
     }
 
     function handleSearch(query) {
       const q = query.trim().toLowerCase();
       if (!q) {
-        filteredDays = [...aggregatedDays];
+        filteredDailyRollups = [...dailyRollups];
       } else {
-        filteredDays = aggregatedDays.filter(d => d.date.toLowerCase().includes(q));
+        filteredDailyRollups = dailyRollups.filter(d => d.date.toLowerCase().includes(q));
       }
-      renderTable();
+      renderLedgerTable();
     }
 
     function zoomToDay(targetDate) {
-      if (!powerChartInstance || rawDataset.length === 0) return;
+      if (!powerChartInstance || recentTelemetry.length === 0) return;
 
-      const timestamps = rawDataset.map(d => (d.reading_timestamp_local || d.reading_timestamp_utc || '').slice(0, 10));
+      const timestamps = recentTelemetry.map(d => (d.reading_timestamp_local || d.reading_timestamp_utc || '').slice(0, 10));
       const firstIdx = timestamps.indexOf(targetDate);
       const lastIdx = timestamps.lastIndexOf(targetDate);
 
       if (firstIdx === -1) return;
 
-      const totalPoints = rawDataset.length;
+      const totalPoints = recentTelemetry.length;
       const startPct = Math.max(0, (firstIdx / totalPoints) * 100);
       const endPct = Math.min(100, ((lastIdx + 1) / totalPoints) * 100);
 
@@ -844,34 +809,18 @@
     }
 
     function exportTableToCSV() {
-      if (!aggregatedDays || aggregatedDays.length === 0) return;
+      if (!dailyRollups || dailyRollups.length === 0) return;
 
       const headers = [
-        'Date',
-        'Solar Yield (kWh)',
-        'Load (kWh)',
-        'Grid Import (kWh)',
-        'Grid Export (kWh)',
-        'Independence (%)',
-        'Energy Cost (GBP)',
-        'Standing Charge (GBP)',
-        'Total Bill (GBP)',
-        'Export Revenue (GBP)',
-        'Net Position (GBP)'
+        'Date', 'Solar Yield (kWh)', 'Load (kWh)', 'Grid Import (kWh)',
+        'Grid Export (kWh)', 'Independence (%)', 'Energy Cost (GBP)',
+        'Standing Charge (GBP)', 'Total Bill (GBP)', 'Export Revenue (GBP)', 'Net Position (GBP)'
       ];
 
-      const rows = aggregatedDays.map(d => [
-        d.date,
-        d.gen.toFixed(2),
-        d.load.toFixed(2),
-        d.imp.toFixed(2),
-        d.exp.toFixed(2),
-        d.autonomy.toFixed(1),
-        d.energyCost.toFixed(2),
-        d.standingCharge.toFixed(2),
-        d.totalImportCost.toFixed(2),
-        d.rev.toFixed(2),
-        d.net.toFixed(2)
+      const rows = dailyRollups.map(d => [
+        d.date, d.generation_kwh.toFixed(2), d.load_kwh.toFixed(2), d.grid_import_kwh.toFixed(2), d.grid_export_kwh.toFixed(2),
+        d.autonomy_pct.toFixed(1), d.energy_cost_gbp.toFixed(2), d.standing_charge_gbp.toFixed(2),
+        d.total_import_cost_gbp.toFixed(2), d.export_revenue_gbp.toFixed(2), d.net_balance_gbp.toFixed(2)
       ]);
 
       const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');

@@ -1,0 +1,24 @@
+{
+  "verified_at_utc": "2026-09-28T17:47:34.496878+00:00",
+  "status_level": "WARNING",
+  "reconciliation_passed": true,
+  "execution_duration_seconds": 0.32,
+  "metrics": {
+    "silver_total_records": 4544,
+    "gold_recent_records": 4544,
+    "gold_daily_days": 17,
+    "complete_days_count": 5,
+    "partial_days_count": 12,
+    "energy_reconciliation_delta_kwh": 0.0,
+    "faults_count": 0,
+    "faults": [],
+    "warnings_count": 11,
+    "warnings_sample": [
+      "Day 2026-09-27 is partial: 269/288 intervals (standard)",
+      "Day 2026-09-23 has minor telemetry gap: 287/288 intervals (standard)",
+      "Day 2026-09-20 has minor telemetry gap: 287/288 intervals (standard)",
+      "Day 2026-09-19 has minor telemetry gap: 286/288 intervals (standard)",
+      "Day 2026-09-18 has minor telemetry gap: 286/288 intervals (standard)"
+    ]
+  }
+}
