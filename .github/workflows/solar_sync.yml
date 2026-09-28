@@ -34,7 +34,7 @@ jobs:
 
       - name: 2. Execute Gold Analytical Transformations & Reconciliation
         run: |
-          python gold_transform.py
+          python gold_transformation.py
 
       - name: 3. Enforce Declarative Data Retention & Lifecycle Policies
         run: |
