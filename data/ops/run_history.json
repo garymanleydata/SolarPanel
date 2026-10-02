@@ -1,5 +1,29 @@
 [
   {
+    "run_timestamp_utc": "2026-10-02T05:01:00.035766+00:00",
+    "execution_duration_seconds": 1.22,
+    "lookback_hours_requested": 4.0,
+    "latest_telemetry_timestamp_utc": "2026-10-02T06:53:33+00:00",
+    "telemetry_freshness_lag_minutes": -112.5,
+    "health_status": "WARNING",
+    "contract_passed": true,
+    "metrics": {
+      "passed": true,
+      "status_level": "WARNING",
+      "total_records_evaluated": 5586,
+      "new_records_count": 12,
+      "schema_violations_count": 0,
+      "schema_violations_sample": [],
+      "boundary_violations_count": 0,
+      "boundary_violations_sample": [],
+      "monotonicity_violations_count": 1,
+      "monotonicity_violations_sample": [
+        "[2026-09-29T14:28:32+00:00] Negative counter jump in Solar generation: 8261.6 -> 8261.5 (diff: -0.100 kWh)"
+      ],
+      "power_balance_warnings_count": 0
+    }
+  },
+  {
     "run_timestamp_utc": "2026-10-02T04:00:59.965487+00:00",
     "execution_duration_seconds": 0.9,
     "lookback_hours_requested": 4.0,
