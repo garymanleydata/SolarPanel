@@ -1,8 +1,8 @@
 {
-  "verified_at_utc": "2026-10-03T00:01:01.536136+00:00",
+  "verified_at_utc": "2026-10-03T01:01:05.444664+00:00",
   "status_level": "WARNING",
   "reconciliation_passed": true,
-  "execution_duration_seconds": 0.2,
+  "execution_duration_seconds": 0.12,
   "metrics": {
     "silver_total_records": 5815,
     "gold_recent_records": 5815,
