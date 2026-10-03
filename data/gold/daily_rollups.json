@@ -1,22 +1,22 @@
 [
   {
     "date": "2026-10-03",
-    "record_count": 36,
+    "record_count": 60,
     "generation_kwh": 0.4,
-    "load_kwh": 0.5,
-    "grid_import_kwh": 2.2,
+    "load_kwh": 0.9,
+    "grid_import_kwh": 3.0,
     "grid_export_kwh": 0.0,
-    "self_consumed_kwh": 0.4,
+    "self_consumed_kwh": 0.7,
     "autonomy_pct": 0.0,
-    "energy_cost_gbp": 0.2,
+    "energy_cost_gbp": 0.27,
     "standing_charge_gbp": 0.52,
-    "total_import_cost_gbp": 0.72,
+    "total_import_cost_gbp": 0.79,
     "export_revenue_gbp": 0.0,
-    "solar_savings_gbp": 0.04,
-    "net_balance_gbp": 0.72,
+    "solar_savings_gbp": 0.06,
+    "net_balance_gbp": 0.79,
     "peak_solar_kw": 0.0,
     "battery_min_soc_pct": 77.0,
-    "battery_max_soc_pct": 96.0
+    "battery_max_soc_pct": 100.0
   },
   {
     "date": "2026-10-02",
