@@ -1,5 +1,29 @@
 [
   {
+    "run_timestamp_utc": "2026-10-05T20:06:39.400957+00:00",
+    "execution_duration_seconds": 1.08,
+    "lookback_hours_requested": 4.0,
+    "latest_telemetry_timestamp_utc": "2026-10-05T21:48:34+00:00",
+    "telemetry_freshness_lag_minutes": -101.9,
+    "health_status": "WARNING",
+    "contract_passed": true,
+    "metrics": {
+      "passed": true,
+      "status_level": "WARNING",
+      "total_records_evaluated": 6629,
+      "new_records_count": 13,
+      "schema_violations_count": 0,
+      "schema_violations_sample": [],
+      "boundary_violations_count": 0,
+      "boundary_violations_sample": [],
+      "monotonicity_violations_count": 1,
+      "monotonicity_violations_sample": [
+        "[2026-09-29T14:28:32+00:00] Negative counter jump in Solar generation: 8261.6 -> 8261.5 (diff: -0.100 kWh)"
+      ],
+      "power_balance_warnings_count": 0
+    }
+  },
+  {
     "run_timestamp_utc": "2026-10-05T19:01:09.335714+00:00",
     "execution_duration_seconds": 0.98,
     "lookback_hours_requested": 4.0,
@@ -2363,30 +2387,6 @@
       "passed": true,
       "status_level": "WARNING",
       "total_records_evaluated": 5440,
-      "new_records_count": 12,
-      "schema_violations_count": 0,
-      "schema_violations_sample": [],
-      "boundary_violations_count": 0,
-      "boundary_violations_sample": [],
-      "monotonicity_violations_count": 1,
-      "monotonicity_violations_sample": [
-        "[2026-09-29T14:28:32+00:00] Negative counter jump in Solar generation: 8261.6 -> 8261.5 (diff: -0.100 kWh)"
-      ],
-      "power_balance_warnings_count": 0
-    }
-  },
-  {
-    "run_timestamp_utc": "2026-10-01T16:01:12.643349+00:00",
-    "execution_duration_seconds": 1.65,
-    "lookback_hours_requested": 4.0,
-    "latest_telemetry_timestamp_utc": "2026-10-01T17:43:32+00:00",
-    "telemetry_freshness_lag_minutes": -102.3,
-    "health_status": "WARNING",
-    "contract_passed": true,
-    "metrics": {
-      "passed": true,
-      "status_level": "WARNING",
-      "total_records_evaluated": 5428,
       "new_records_count": 12,
       "schema_violations_count": 0,
       "schema_violations_sample": [],
