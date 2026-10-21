@@ -1,11 +1,11 @@
 {
-  "verified_at_utc": "2026-10-21T21:01:14.338865+00:00",
+  "verified_at_utc": "2026-10-21T22:01:19.347429+00:00",
   "status_level": "WARNING",
   "reconciliation_passed": true,
   "execution_duration_seconds": 0.33,
   "metrics": {
-    "silver_total_records": 11255,
-    "gold_recent_records": 8647,
+    "silver_total_records": 11266,
+    "gold_recent_records": 8646,
     "gold_daily_days": 41,
     "complete_days_count": 18,
     "partial_days_count": 23,
@@ -14,7 +14,7 @@
     "faults": [],
     "warnings_count": 22,
     "warnings_sample": [
-      "Day 2026-10-22 is partial: 1/288 intervals (standard)",
+      "Day 2026-10-22 is partial: 12/288 intervals (standard)",
       "Day 2026-10-19 has minor telemetry gap: 289/288 intervals (standard)",
       "Day 2026-10-17 has minor telemetry gap: 287/288 intervals (standard)",
       "Day 2026-10-15 has minor telemetry gap: 290/288 intervals (standard)",
