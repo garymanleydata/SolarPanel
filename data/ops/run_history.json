@@ -1,5 +1,33 @@
 [
   {
+    "run_timestamp_utc": "2026-10-24T16:01:07.231498+00:00",
+    "execution_duration_seconds": 1.72,
+    "lookback_hours_requested": 4.0,
+    "latest_telemetry_timestamp_utc": "2026-10-24T18:00:28+00:00",
+    "telemetry_freshness_lag_minutes": -119.3,
+    "health_status": "WARNING",
+    "contract_passed": true,
+    "metrics": {
+      "passed": true,
+      "status_level": "WARNING",
+      "total_records_evaluated": 12058,
+      "new_records_count": 12,
+      "schema_violations_count": 0,
+      "schema_violations_sample": [],
+      "boundary_violations_count": 0,
+      "boundary_violations_sample": [],
+      "monotonicity_violations_count": 5,
+      "monotonicity_violations_sample": [
+        "[2026-09-29T14:28:32+00:00] Negative counter jump in Solar generation: 8261.6 -> 8261.5 (diff: -0.100 kWh)",
+        "[2026-10-15T05:05:30+00:00] Negative counter jump in Solar generation: 8532.4 -> 0.0 (diff: -8532.400 kWh)",
+        "[2026-10-15T05:05:30+00:00] Negative counter jump in Grid import: 4414.7 -> 0.0 (diff: -4414.700 kWh)",
+        "[2026-10-15T05:05:30+00:00] Negative counter jump in Grid export: 5552.1 -> 0.0 (diff: -5552.100 kWh)",
+        "[2026-10-15T05:05:30+00:00] Negative counter jump in Home loads: 5575.5 -> 0.0 (diff: -5575.500 kWh)"
+      ],
+      "power_balance_warnings_count": 0
+    }
+  },
+  {
     "run_timestamp_utc": "2026-10-24T15:01:13.155872+00:00",
     "execution_duration_seconds": 1.75,
     "lookback_hours_requested": 4.0,
@@ -2755,34 +2783,6 @@
       "passed": true,
       "status_level": "WARNING",
       "total_records_evaluated": 10871,
-      "new_records_count": 12,
-      "schema_violations_count": 0,
-      "schema_violations_sample": [],
-      "boundary_violations_count": 0,
-      "boundary_violations_sample": [],
-      "monotonicity_violations_count": 5,
-      "monotonicity_violations_sample": [
-        "[2026-09-29T14:28:32+00:00] Negative counter jump in Solar generation: 8261.6 -> 8261.5 (diff: -0.100 kWh)",
-        "[2026-10-15T05:05:30+00:00] Negative counter jump in Solar generation: 8532.4 -> 0.0 (diff: -8532.400 kWh)",
-        "[2026-10-15T05:05:30+00:00] Negative counter jump in Grid import: 4414.7 -> 0.0 (diff: -4414.700 kWh)",
-        "[2026-10-15T05:05:30+00:00] Negative counter jump in Grid export: 5552.1 -> 0.0 (diff: -5552.100 kWh)",
-        "[2026-10-15T05:05:30+00:00] Negative counter jump in Home loads: 5575.5 -> 0.0 (diff: -5575.500 kWh)"
-      ],
-      "power_balance_warnings_count": 0
-    }
-  },
-  {
-    "run_timestamp_utc": "2026-10-20T12:01:08.695149+00:00",
-    "execution_duration_seconds": 1.47,
-    "lookback_hours_requested": 4.0,
-    "latest_telemetry_timestamp_utc": "2026-10-20T14:00:27+00:00",
-    "telemetry_freshness_lag_minutes": -119.3,
-    "health_status": "WARNING",
-    "contract_passed": true,
-    "metrics": {
-      "passed": true,
-      "status_level": "WARNING",
-      "total_records_evaluated": 10859,
       "new_records_count": 12,
       "schema_violations_count": 0,
       "schema_violations_sample": [],
