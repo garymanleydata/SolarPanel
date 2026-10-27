@@ -1,13 +1,13 @@
 {
-  "verified_at_utc": "2026-10-26T23:01:11.401333+00:00",
+  "verified_at_utc": "2026-10-27T00:01:13.441202+00:00",
   "status_level": "WARNING",
   "reconciliation_passed": true,
   "execution_duration_seconds": 0.33,
   "metrics": {
-    "silver_total_records": 12695,
+    "silver_total_records": 12707,
     "gold_recent_records": 8648,
-    "gold_daily_days": 45,
-    "complete_days_count": 21,
+    "gold_daily_days": 46,
+    "complete_days_count": 22,
     "partial_days_count": 24,
     "energy_reconciliation_delta_kwh": 0.0002,
     "faults_count": 0,
