@@ -1,9 +1,9 @@
 {
-  "executed_at_utc": "2026-10-28T04:01:10.595511+00:00",
+  "executed_at_utc": "2026-10-28T05:01:09.707551+00:00",
   "dry_run": false,
-  "execution_duration_seconds": 2.964,
+  "execution_duration_seconds": 3.284,
   "total_tables_evaluated": 4,
-  "total_records_pruned": 0,
+  "total_records_pruned": 1,
   "compliance_status": "COMPLIANT",
   "table_audits": [
     {
@@ -12,12 +12,12 @@
       "grain": "5_minute",
       "strategy": "full_history",
       "retention_value": null,
-      "original_count": 13043,
+      "original_count": 13054,
       "pruned_count": 0,
-      "retained_count": 13043,
+      "retained_count": 13054,
       "oldest_record_before": "2026-09-12T20:33:52+00:00",
       "oldest_record_after": "2026-09-12T20:33:52+00:00",
-      "newest_record": "2026-10-28T04:00:29+00:00",
+      "newest_record": "2026-10-28T04:55:29+00:00",
       "status": "COMPLIANT",
       "file_path": "data/silver/telemetry_5min.json"
     },
@@ -28,12 +28,12 @@
       "strategy": "rolling_days",
       "retention_value": 30,
       "original_count": 8667,
-      "pruned_count": 0,
-      "retained_count": 8667,
-      "oldest_record_before": "2026-09-28T04:03:31+00:00",
-      "oldest_record_after": "2026-09-28T04:03:31+00:00",
-      "newest_record": "2026-10-28T04:00:29+00:00",
-      "status": "COMPLIANT",
+      "pruned_count": 1,
+      "retained_count": 8666,
+      "oldest_record_before": "2026-09-28T04:58:31+00:00",
+      "oldest_record_after": "2026-09-28T05:03:31+00:00",
+      "newest_record": "2026-10-28T04:55:29+00:00",
+      "status": "PRUNED",
       "file_path": "data/gold/telemetry_recent_30d.json"
     },
     {
@@ -60,9 +60,9 @@
       "original_count": 100,
       "pruned_count": 0,
       "retained_count": 100,
-      "oldest_record_before": "2026-10-24T01:01:06.848826+00:00",
-      "oldest_record_after": "2026-10-24T01:01:06.848826+00:00",
-      "newest_record": "2026-10-28T04:01:09.726675+00:00",
+      "oldest_record_before": "2026-10-24T02:01:03.617657+00:00",
+      "oldest_record_after": "2026-10-24T02:01:03.617657+00:00",
+      "newest_record": "2026-10-28T05:01:08.833978+00:00",
       "status": "COMPLIANT",
       "file_path": "data/ops/run_history.json"
     }
