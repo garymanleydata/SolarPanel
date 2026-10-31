@@ -1,11 +1,11 @@
 {
-  "verified_at_utc": "2026-10-31T02:01:01.436907+00:00",
+  "verified_at_utc": "2026-10-31T03:01:09.027276+00:00",
   "status_level": "WARNING",
   "reconciliation_passed": true,
-  "execution_duration_seconds": 0.23,
+  "execution_duration_seconds": 0.24,
   "metrics": {
-    "silver_total_records": 13886,
-    "gold_recent_records": 8647,
+    "silver_total_records": 13898,
+    "gold_recent_records": 8648,
     "gold_daily_days": 50,
     "complete_days_count": 23,
     "partial_days_count": 27,
